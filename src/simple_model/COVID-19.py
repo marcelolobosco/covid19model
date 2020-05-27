@@ -21,7 +21,7 @@ y,d=integrate.odeint(f, [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0], t, 
 
 
 #######   Viremia  log10 copias/ml ##########
-dadosViremiaLog10 = pd.read_csv('../../data/ViralLoad.csv',';')
+dadosViremiaLog10 = pd.read_csv('../../data/Viral_load_10_2.csv',';')
     
 plt.figure('CurvaAjuste1')
 plt.xlim(0.0,45.0)
