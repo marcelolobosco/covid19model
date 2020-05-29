@@ -6,18 +6,18 @@ from scipy import integrate
 from scipy.integrate import ode
 from math import log as ln
 from math import log10 as log
-T = 500
+T = 250
 t_points = 5000
 t=np.linspace(0,T,t_points)
 def model():
-    A0 = 150.0
+    A0 = 0.0
     AC0 = 0
     Ap0 = 1E06
     Apm0 = 0.0
     B0 = 2.5E05
     Bm0 = 0.0
     C0 = 0
-    L0 = 1E10
+    L0 = 1E6
     Ldead0 = 0
     Linfec0 = 0
     Pl0 = 0.0
@@ -27,16 +27,16 @@ def model():
     Tke0 = 0.0
     Tkn0 = 5E05
     Treg0 = 0
-    V0 = 1000
+    V0 = 500
     alpha_Ap = 2.50E-03
     alpha_B = 6.0E+00
     alpha_Thn = 2.17E-04
     alpha_Tkn = 2.17E-04
-    betaC_Apm = 1E-06*0
-    betaC_Linfec = 1E-06*0
-    betaC_The = 1E-06*0
-    betaC_Tke = 1E-06*0
-    beta_Ap = 5.5e-01
+    betaC_Apm = 1E-05
+    betaC_Linfec = 1E-05
+    betaC_The = 1E-05
+    betaC_Tke = 1E-05
+    beta_Ap = 5.5e-04
     beta_Bm = 1.0E-06
     beta_L = 5.61E-06
     beta_S = 0.000672
@@ -59,31 +59,34 @@ def model():
     pi_AL = 0.00068
     pi_AS = 0.002
     pldead = 1E-07
-    plinfec = 1E-07
-    pv_a = 4.82E-05
-    pv_apm = 1E-07
-    pv_tke = 7.48E-07
+    factor = 1
+    plinfec = 1E-05/factor
+    pv_a = 4.82E-05/factor
+    pv_apm = 1E-05/factor
+    pv_tke = 7.48E-05/factor
     r1_B = 4.826E-06
     r2_B = 1.27E-8
     r_bm1 = 1.0e-5
     r_bm2 = 2500.0
     r_the = 1E-08
     r_tke = 1.0E-08
-    rv = 2
-    rrv = 1000
-    s_ap = 1E-06*0
-    s_thn = 1E-06*0
-    s_tkn = 1E-06*0
+    rv = 1
+    rrv = 100
+    s_ap = 1E-04
+    s_thn = 1E-04
+    s_tkn = 1E-04
+    s_B = 1E-05
+    dmgL_Tke = 1E-07 # Dano tecidual causado pela Tke 
 
     def V(u, t):
         repV = rv*u[0]
         deathLinfec_V = dl*u[14]
         deathLinfec_releaseV = rrv*deathLinfec_V
-        phagV_A = pv_a*u[0]*u[12]
-        #phagV_Innate = c_v1*u[0]/(1 + c_v2*u[0])
-        phagV_Innate = 0
-        phagV_Tke = pv_tke*u[0]*u[7]
-        phagV_apm = pv_apm*u[0]*u[2]
+        phagV_A = pv_a*u[0]*u[12]/(1 + u[0])
+        phagV_Innate = (c_v1*u[0]/(1 + c_v2*u[0]))//(1 + u[0])
+        #phagV_Innate = 0
+        phagV_Tke = pv_tke*u[0]*u[7]/(1 + u[0])
+        phagV_apm = pv_apm*u[0]*u[2]/(1 + u[0])
         infecL_V = i*u[13]*u[0]
         return repV + deathLinfec_releaseV - phagV_Innate - phagV_apm - phagV_A - phagV_Tke - infecL_V
 
@@ -106,7 +109,7 @@ def model():
 
     def The(u, t):
         act_thn = beta_Thn*u[2]*u[3]
-        phagV_apm = pv_apm*u[0]*u[2]
+        phagV_apm = pv_apm*u[0]*u[2]/(1 + u[0])
         rep_the = r_the*phagV_apm*u[4]
         death_The = m_the*u[4]
         return act_thn + rep_the - death_The
@@ -121,7 +124,7 @@ def model():
         return homeos_Tkn + mig_Tkn - act_Tkn
 
     def Tke(u, t):
-        phagV_Tke = pv_tke*u[0]*u[7]
+        phagV_Tke = pv_tke*u[0]*u[7]/(1 + u[0])
         act_Tkn = beta_Tkn*u[2]*u[6]
         rep_Tke = r_tke*phagV_Tke*u[7]
         death_Tke = m_tke*u[7]
@@ -154,7 +157,8 @@ def model():
 
     def L(u, t):
         infecL_V = i*u[13]*u[0]
-        return infecL_V
+        deathL_Tke = dmgL_Tke*u[13]*u[7]
+        return - infecL_V - deathL_Tke
 
     def Linfec(u, t):
         phagLinfec_Tke = plinfec*u[14]*u[7]
@@ -165,13 +169,14 @@ def model():
     def Ldead(u, t):
         phagLdead_M = pldead*u[15]*(u[2] + u[1])
         deathLinfec_V = dl*u[14]
-        return deathLinfec_V - phagLdead_M
+        deathL_Tke = dmgL_Tke*u[13]*u[7]
+        return deathLinfec_V + deathL_Tke - phagLdead_M
 
     def C(u, t):
-        phagV_apm = pv_apm*u[0]*u[2]
+        phagV_apm = pv_apm*u[0]*u[2]/(1 + u[0])
         prodC = betaC_Linfec*u[14] + betaC_Apm*phagV_apm + betaC_The*u[4] + betaC_Tke*u[7]
         death_C = m_C*u[16]
-        return prodC - death_C
+        return prodC*(1 + 0.01*u[16]) - death_C
 
     def AC(u, t):
         return 0
@@ -203,7 +208,7 @@ for k in results.keys():
     fig = plt.figure(figsize=(6,4))
     plt.plot(t, results[k], label=str(k), color=colorVal)
     plt.yscale('log')
-    plt.xlabel('time (days)')
+    plt.xlabel('time (hours)')
     plt.ylabel('concentration (1/mm³)')
     plt.legend()
     fig.savefig(str(k) + '.svg', format='svg', bbox_inches='tight')
