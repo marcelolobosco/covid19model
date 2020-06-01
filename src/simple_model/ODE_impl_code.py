@@ -6,7 +6,7 @@ from scipy import integrate
 from scipy.integrate import ode
 from math import log as ln
 from math import log10 as log
-T = 22
+T = 50
 t_points = 10000
 t=np.linspace(0,T,t_points)
 def model():
@@ -35,7 +35,10 @@ def model():
     alpha_Ap = 2.50E-03
     alpha_B = 6.0E+00
     alpha_Thn = 2.17E-04
+    alpha_Treg = 0    
     alpha_Tkn = 1E-05
+    betaAC_apc = 1E-03
+    betaAC_treg = 1E-04    
     betaC_Apm = 1E-02
     betaC_Linfec = 1E-03
     betaC_The = 1E-02
@@ -45,7 +48,8 @@ def model():
     beta_Pl = 5.61E-06
     beta_Ps = 0.000672
     beta_Thn = 1.0E-07
-    beta_Tkn = 1.0E-05
+    beta_Thn_Treg = 1.0E-06
+    beta_Tkn = 1.0E-07
     c_v1 = 2.63
     c_v2 = 0.60
     dl = 1E-02
@@ -58,16 +62,20 @@ def model():
     m_Pl = 0.00023976
     m_Ps = 2.0
     m_apm = 5.38E-01
+    m_thn = 1    
     m_the = 0.22
+    m_treg = 0.22
+    m_tkn = 1
     m_tke = 0.0003
+    m_ac = 0.05    
     pi_AL = 0.00068
     pi_AS = 0.002
     pldead = 1E-07
-    factor = 10
+    factor = 1
     plinfec = 1E-04/factor
     pv_a = 4.82E-05/factor
     pv_apm = 1E-04/factor
-    pv_tke = 7.48E-05/factor
+    #pv_tke = 7.48E-05/factor
     r1_B = 4.826E-06
     r2_B = 1.27E-8
     r_bm1 = 1.0e-5
@@ -82,9 +90,10 @@ def model():
     s_b = 1E-03
     dmgL_Tke = 1E-06 # Dano tecidual causado pela Tke 
     inc_c = 0.
-    v_inhb = 0.
+    v_inhb = 0.    
+    ac_inhb = 0.1
 
-    #Como a resposta é no tecido, separar as células B em não ativadas e ativadas 
+    #Como a resposta é no tecido, separar as células B em não ativadas e ativadas?
 
     def V(u, t):
         repV = rv*u[0]
@@ -93,55 +102,57 @@ def model():
         inhibition = (1 + v_inhb*u[0])
         phagV_A = pv_a*u[0]*u[12]/inhibition
         phagV_Innate = (c_v1*u[0]/(1 + c_v2*u[0]))/inhibition
-        #phagV_Innate = 0
-        phagV_Tke = pv_tke*u[0]*u[7]/inhibition
         phagV_apm = pv_apm*u[0]*u[2]/inhibition
         infecL_V = i*u[13]*u[0]
-        return repV + deathLinfec_releaseV - phagV_Innate - phagV_apm - phagV_A - phagV_Tke - infecL_V
+        return repV + deathLinfec_releaseV - phagV_Innate - phagV_apm - phagV_A - infecL_V
 
     def Ap(u, t):
-        act_Ap = beta_Ap*u[1]*(k_ap1*(u[0] + u[16])/(k_ap2 + (u[0] + u[16])))
+        act_Ap = (beta_Ap*u[1]*(k_ap1*(u[0] + u[16])/(k_ap2 + (u[0] + u[16]))) )/(1 + ac_inhb*u[17])
         homeos_Ap = alpha_Ap*(1 + s_ap*u[16])*(Ap_max - u[1])
         return homeos_Ap - act_Ap
 
     def Apm(u, t):
-        act_Ap = beta_Ap*u[1]*(k_ap1*(u[0] + u[16])/(k_ap2 + (u[0] + u[16])))
+        act_Ap = (beta_Ap*u[1]*(k_ap1*(u[0] + u[16])/(k_ap2 + (u[0] + u[16]))) )/(1 + ac_inhb*u[17])
         death_Apm = m_apm*u[2]        
         return act_Ap - death_Apm
 
-    def Thn(u, t):
-        act_thn = beta_Thn*u[2]*u[3]
+    def Thn(u, t):                
         homeos_Thn = alpha_Thn*(0 + s_thn*u[16])*(Thn_max - u[3])
-        return homeos_Thn - act_thn
+        act_thn = beta_Thn*u[2]*u[3]/(1 + ac_inhb*u[17])
+        diff_thn_treg = beta_Thn_Treg*u[2]*u[3]*(u[17])
+        death_Thn = m_thn*u[3]
+        return homeos_Thn - act_thn - diff_thn_treg - death_Thn
 
     def The(u, t):
         inhibition = (1 + v_inhb*u[0])
-        act_thn = beta_Thn*u[2]*u[3]
+        act_thn = beta_Thn*u[2]*u[3]/(1 + ac_inhb*u[17])
         phagV_apm = pv_apm*u[0]*u[2]/inhibition
-        rep_the = r_the*phagV_apm*u[4]
+        rep_the = r_the*phagV_apm*u[4]/(1 + ac_inhb*u[17])
         death_The = m_the*u[4]
         return act_thn + rep_the - death_The
 
     def Treg(u, t):
-        return 0
+        diff_thn_treg = beta_Thn_Treg*u[2]*u[3]*(u[17])
+        death_Treg = m_treg*u[5]
+        return diff_thn_treg - death_Treg
 
     def Tkn(u, t):
         homeos_Tkn = alpha_Tkn*(0 + s_tkn*u[16])*(Tkn_max - u[6])
-        act_Tkn = beta_Tkn*u[2]*u[6]        
-        return homeos_Tkn - act_Tkn
+        act_Tkn = beta_Tkn*u[2]*u[4]*u[6]/(1 + ac_inhb*u[17])        
+        death_Tkn = m_tkn*u[6]
+        return homeos_Tkn - act_Tkn - death_Tkn
 
-    def Tke(u, t):
-        inhibition = (1 + v_inhb*u[0])
-        phagV_Tke = pv_tke*u[0]*u[7]/inhibition
-        act_Tkn = beta_Tkn*u[2]*u[6]
-        rep_Tke = r_tke*phagV_Tke*u[7]
+    def Tke(u, t):        
+        act_Tkn = beta_Tkn*u[2]*u[4]*u[6]/(1 + ac_inhb*u[17])        
+        phagLinfec_Tke = plinfec*u[14]*u[7]
+        rep_Tke = r_tke*phagLinfec_Tke/(1 + ac_inhb*u[17])
         death_Tke = m_tke*u[7]
         return act_Tkn + rep_Tke - death_Tke
 
     def B(u, t):
-        rep_B = (r1_B*u[0] + r2_B*u[4])*u[8]    
+        rep_B = (r1_B*u[0] + r2_B*u[4])*u[8]/(1 + ac_inhb*u[17])
         homeos_B = alpha_B*(0 + s_b*u[16])*(B_max - u[8])
-        diff_B = (beta_Ps*u[2] + beta_Pl*u[4] + beta_Bm*u[4])*u[8]
+        diff_B = (beta_Ps*u[2] + beta_Pl*u[4] + beta_Bm*u[4])*u[8]/(1 + ac_inhb*u[17])
         return homeos_B + rep_B - diff_B
 
     def Ps(u, t):
@@ -185,10 +196,12 @@ def model():
         phagV_apm = (pv_apm*u[0]*u[2])/inhibition
         prodC = betaC_Linfec*u[14] + betaC_Apm*phagV_apm + betaC_The*u[4] + betaC_Tke*u[7]
         death_C = m_C*u[16]
-        return prodC*(1 + inc_c*u[16]) - death_C
+        return prodC*(1 + inc_c*u[16])/(1 + ac_inhb*u[17]) - death_C
 
     def AC(u, t):
-        return 0
+        phagLdead_M = pldead*u[15]*(u[2] + u[1])
+        prodAC_apc = betaAC_apc*phagLdead_M        
+        return prodAC_apc + betaAC_treg*u[5] - m_ac*u[17]
 
     def f(u,t):
         return V(u,t),Ap(u,t),Apm(u,t),Thn(u,t),The(u,t),Treg(u,t),Tkn(u,t),Tke(u,t),B(u,t),Ps(u,t),Pl(u,t),Bm(u,t),A(u,t),L(u,t),Linfec(u,t),Ldead(u,t),C(u,t),AC(u,t)
@@ -226,7 +239,7 @@ for k in results.keys():
     colorVal = scalarMap.to_rgba(color_index)
 
 fig = plt.figure(figsize=(6,4))
-plt.plot(t, results["L"], label=str(k), color=colorVal)
+plt.plot(t, results["L"], label="Lung tissue", color=colorVal)
 plt.yscale('log')
 plt.xlabel('time (days)')
 plt.ylabel('(1/mm³)')
