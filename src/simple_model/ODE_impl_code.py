@@ -66,7 +66,8 @@ def model():
     m_the = 0.22
     m_treg = 0.22
     m_tkn = 1
-    m_tke = 0.0003
+    #m_tke = 0.0003
+    m_tke = 0.03
     m_ac = 0.05    
     pi_AL = 0.00068
     pi_AS = 0.002
@@ -137,7 +138,7 @@ def model():
         return diff_thn_treg - death_Treg
 
     def Tkn(u, t):
-        homeos_Tkn = alpha_Tkn*(0 + s_tkn*u[16])*(Tkn_max - u[6])
+        homeos_Tkn = alpha_Tkn*(0 + s_tkn*u[4])*(Tkn_max - u[6])
         act_Tkn = beta_Tkn*u[2]*u[4]*u[6]/(1 + ac_inhb*u[17])        
         death_Tkn = m_tkn*u[6]
         return homeos_Tkn - act_Tkn - death_Tkn
