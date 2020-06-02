@@ -22,6 +22,25 @@ y,d=integrate.odeint(f, [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0], t, 
 
 #######   Viremia  log10 copias/ml ##########
 dadosViremiaLog10 = pd.read_csv('../../data/Viral_load_10_2.csv',';')
+dadosAnticorposLog2 = pd.read_csv('../../data/IgG_IgM_21_1b.csv',',') 
+
+media_igG =[]
+media_igM = []
+for x,df in dadosAnticorposLog2.groupby(['Group']):
+    media_igG.append({'grupo':x,
+                    'm_igg':gmean(df['IgG'])})
+    media_igM.append({'grupo':x,
+                    'm_igm':gmean(df['IgM'])})
+
+media_igG = pd.DataFrame(media_igG)
+media_igM = pd.DataFrame(media_igM)
+means_igG= [media_igG.iloc[0,1],media_igG.iloc[1,1],media_igG.iloc[2,1],media_igG.iloc[3,1]]
+means_igM= [media_igM.iloc[0,1],media_igM.iloc[1,1],media_igM.iloc[2,1],media_igM.iloc[3,1]]  
+
+sns.boxplot(x="Group", y="IgG",data=dadosAnticorposLog2, palette="BuGn_r",showfliers=False,order=['0-7','8-14','15-21','22-27'])
+sns.boxplot(x="Group", y="IgM",data=dadosAnticorposLog2, palette="BuGn_r",showfliers=False,order=['0-7','8-14','15-21','22-27'])
+pylab.scatter([0,1,2,3], means_igG,marker='D',color='red',label='GMT Dados IgG')
+pylab.scatter([0,1,2,3], means_igM,marker='D',color='blue',label='GMT Dados IgM')
     
 plt.figure('CurvaAjuste1')
 plt.xlim(0.0,45.0)
