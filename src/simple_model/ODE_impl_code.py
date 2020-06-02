@@ -126,8 +126,8 @@ def model():
     def The(u, t):
         inhibition = (1 + v_inhb*u[0])
         act_thn = beta_Thn*u[2]*u[3]/(1 + ac_inhb*u[17])
-        phagV_apm = pv_apm*u[0]*u[2]/inhibition
-        rep_the = r_the*phagV_apm*u[4]/(1 + ac_inhb*u[17])
+        #phagV_apm = pv_apm*u[0]*u[2]/inhibition
+        rep_the = r_the*u[2]*u[4]/(1 + ac_inhb*u[17])
         death_The = m_the*u[4]
         return act_thn + rep_the - death_The
 
