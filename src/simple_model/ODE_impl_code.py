@@ -6,7 +6,7 @@ from scipy import integrate
 from scipy.integrate import ode
 from math import log as ln
 from math import log10 as log
-T = 50
+T = 30
 t_points = 10000
 t=np.linspace(0,T,t_points)
 def model():
@@ -32,28 +32,30 @@ def model():
     Tkn_max = 5E05
     Treg0 = 0
     V0 = 500
-    alpha_Ap = 2.50E-03
-    alpha_B = 6.0E+00
-    alpha_Thn = 2.17E-04
+    INF_EFFECT = 2
+    INF_EFFECT2 = 1
+    alpha_Ap = 2.50E-03*INF_EFFECT
+    alpha_B = 6.0E+00*INF_EFFECT
+    alpha_Thn = 2.17E-04*INF_EFFECT
     alpha_Treg = 0    
-    alpha_Tkn = 1E-05
+    alpha_Tkn = 1E-05*INF_EFFECT
     betaAC_apc = 1E-03
     betaAC_treg = 1E-04    
-    betaC_Apm = 1E-02
-    betaC_Linfec = 1E-03
-    betaC_The = 1E-02
-    betaC_Tke = 1E-03
+    betaC_Apm = 1E-02*INF_EFFECT2
+    betaC_Linfec = 1E-03*INF_EFFECT2
+    betaC_The = 1E-01
+    betaC_Tke = 1E-03*INF_EFFECT2
     beta_Ap = 5.5e-01
     beta_Bm = 1.0E-06
     beta_Pl = 5.61E-06
     beta_Ps = 0.000672
     beta_Thn = 1.0E-07
     beta_Thn_Treg = 1.0E-06
-    beta_Tkn = 1.0E-07
+    beta_Tkn = 1.0E-08
     c_v1 = 2.63
     c_v2 = 0.60
     dl = 1E-02
-    i = 1E-05
+    i = 1E-04
     k_ap1 = 0.8
     k_ap2 = 40.0
     m_A = 0.04
@@ -66,8 +68,7 @@ def model():
     m_the = 0.22
     m_treg = 0.22
     m_tkn = 1
-    #m_tke = 0.0003
-    m_tke = 0.03
+    m_tke = 0.0003    
     m_ac = 0.05    
     pi_AL = 0.00068
     pi_AS = 0.002
@@ -75,27 +76,25 @@ def model():
     factor = 1
     plinfec = 1E-04/factor
     pv_a = 4.82E-05/factor
-    pv_apm = 1E-04/factor
-    #pv_tke = 7.48E-05/factor
+    pv_apm = 1E-04/factor    
     r1_B = 4.826E-06
     r2_B = 1.27E-8
-    r_bm1 = 1.0e-5
+    r_bm1 = 1E-05
     r_bm2 = 2500.0
-    r_the = 1E-06
-    r_tke = 1.0E-06
+    r_the = 1E-08
+    r_tke = 1E-08
     rv = 1
     rrv = 100
     s_ap = 1
     s_thn = 1
     s_tkn = 1
-    s_b = 1E-03
+    s_b = 5E-03
     dmgL_Tke = 1E-06 # Dano tecidual causado pela Tke 
+    dmgL_V = 1E-06
     inc_c = 0.
     v_inhb = 0.    
     ac_inhb = 0.1
-
-    #Como a resposta é no tecido, separar as células B em não ativadas e ativadas?
-
+    
     def V(u, t):
         repV = rv*u[0]
         deathLinfec_V = dl*u[14]
@@ -108,12 +107,12 @@ def model():
         return repV + deathLinfec_releaseV - phagV_Innate - phagV_apm - phagV_A - infecL_V
 
     def Ap(u, t):
-        act_Ap = (beta_Ap*u[1]*(k_ap1*(u[0] + u[16])/(k_ap2 + (u[0] + u[16]))) )/(1 + ac_inhb*u[17])
+        act_Ap = (beta_Ap*u[1]*(k_ap1*(u[0])/(k_ap2 + (u[0]))) )/(1 + ac_inhb*u[17])
         homeos_Ap = alpha_Ap*(1 + s_ap*u[16])*(Ap_max - u[1])
         return homeos_Ap - act_Ap
 
     def Apm(u, t):
-        act_Ap = (beta_Ap*u[1]*(k_ap1*(u[0] + u[16])/(k_ap2 + (u[0] + u[16]))) )/(1 + ac_inhb*u[17])
+        act_Ap = (beta_Ap*u[1]*(k_ap1*(u[0])/(k_ap2 + (u[0]))) )/(1 + ac_inhb*u[17])
         death_Apm = m_apm*u[2]        
         return act_Ap - death_Apm
 
@@ -127,8 +126,8 @@ def model():
     def The(u, t):
         inhibition = (1 + v_inhb*u[0])
         act_thn = beta_Thn*u[2]*u[3]/(1 + ac_inhb*u[17])
-        phagV_apm = pv_apm*u[0]*u[2]/inhibition
-        rep_the = r_the*phagV_apm*u[4]/(1 + ac_inhb*u[17])
+        #phagV_apm = pv_apm*u[0]*u[2]/inhibition
+        rep_the = r_the*u[2]*u[4]/(1 + ac_inhb*u[17])
         death_The = m_the*u[4]
         return act_thn + rep_the - death_The
 
@@ -178,7 +177,7 @@ def model():
     def L(u, t):
         infecL_V = i*u[13]*u[0]
         deathL_Tke = dmgL_Tke*u[13]*u[7]
-        return - infecL_V - deathL_Tke
+        return - infecL_V - deathL_Tke - dmgL_V*u[13]*u[0]
 
     def Linfec(u, t):
         phagLinfec_Tke = plinfec*u[14]*u[7]
@@ -195,7 +194,7 @@ def model():
     def C(u, t):
         inhibition = (1 + v_inhb*u[0])
         phagV_apm = (pv_apm*u[0]*u[2])/inhibition
-        prodC = betaC_Linfec*u[14] + betaC_Apm*phagV_apm + betaC_The*u[4] + betaC_Tke*u[7]
+        prodC = betaC_Linfec*u[14] + betaC_Apm*phagV_apm + betaC_The*u[4] + betaC_Tke*u[7]        
         death_C = m_C*u[16]
         return prodC*(1 + inc_c*u[16])/(1 + ac_inhb*u[17]) - death_C
 
@@ -214,6 +213,22 @@ def model():
 results = {}
 results['V'], results['Ap'], results['Apm'], results['Thn'], results['The'], results['Treg'], results['Tkn'], results['Tke'], results['B'], results['Ps'], results['Pl'], results['Bm'], \
 results['A'], results['L'], results['Linfec'], results['Ldead'], results['C'], results['AC'] = model()
+
+labels = {}
+labels['V'] = 'Coronavirus'
+labels['Ap'] = 'APC'
+labels['Apm'] = 'Activated APC'
+labels['Thn'] = 'Naive T helper'
+labels['The'] = 'Effector T helper'
+labels['Tkn'] = 'Naive T killer'
+labels['Tke'] = 'Effector T killer'
+labels['Treg'] = 'Regulatory T cells'
+labels['B'] = 'B cells'
+labels['Ps'] = 'Short-lived plasma cells'
+labels['Pl'] = 'Long-lived plasma cells'
+labels['Bm'] = 'B memory cells'
+labels['A'] = 'Antibodies'
+
 def savetxt(filename, t, M):
     fd = open(filename, "w")
     cont = 0
