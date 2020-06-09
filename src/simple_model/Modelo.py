@@ -15,8 +15,7 @@ def immune_response (P, t, pi_v=1.25, c_v1=2.63, c_v2=0.60, k_v1=0.000120532191*
                      k_ap1=0.8, k_ap2=40.0, delta_Apm=5.38E-01, alpha_Tn=2.17E-04, pi_T=1.0E-05, k_te1=1.0E-08, delta_te=0.1*0.003,
                      alpha_B=6.0E+00, pi_B1=4.826E-06, pi_B2=1.27E-10*100.0, beta_S=0.000672, beta_L=5.61E-06, beta_Bm=1.0E-06,
                      delta_S=2.0, delta_L=(2.22E-04)*1.8*0.6, gamma_M=(1.95E-06)*500.0, k_bm1=1.0e-5, k_bm2=2500.0, pi_AS=0.002,
-                     pi_AL=0.00068, delta_A_G=0.01, delta_A_M=0.05, c11 = 2.17E-04, c12 = 1.0E-07, c13 = 1E-08, c14 = 0.22, Ap0 = 1.0e6, Thn0 = (1.0e6), Tkn0 = 5.0e5, 
-                     B0 =  (1.0e3)*250.0):
+                     pi_AL=0.00068, delta_A_G=0.01, delta_A_M=0.05, c11 = 2.17E-04, c12 = 1.0E-07, c13 = 1E-08, c14 = 0.22, Ap0 = 1.0e6, Thn0 = (1.0e6), Tkn0 = 5.0e5, B0 = (1.0e3)*250.0):
     """
     Simple Model
     """
