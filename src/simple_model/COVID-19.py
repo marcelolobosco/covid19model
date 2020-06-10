@@ -24,7 +24,6 @@ Ap0 = 1.0e6
 Apm0 = 0.0
 Thn0 = (1.0e6)#*0.5
 The0 = 0.0  #### Convertendo de ul para ml
-Tkn0 = 5.0e5
 Tkn0 = (1.0e3)*500.0#(1.0e3)*500.0
 Tke0 = 0.0
 B0 =  (1.0e3)*250.0#125000.0#

@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 import sys
 import numpy as np
@@ -37,73 +39,33 @@ antibody_m = dadosAnticorposLog2['IgM']
 mask_virus     =[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 mask_antibodies=[0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-
-
-
 execution_de =  []
 
 def model(x):
     '''
     Params description:
+    x[0]=> V0    
+    x[1]=> pi_v 
+    x[2]=> k_v1
+    x[3]=> k_v2
+    x[4]=>delta_Apm
+    x[5]=>alpha_B
+    x[6]=>delta_A_G
+    x[7]=>delta_A_M
+    delta_ps, delta_th, beta_pl, pi_pl, delta_apm
     
-    x[0]=> Ap0
-    x[1]=> Apm0
-    x[2]=> Thn0
-    x[3]=> The0
-    x[4]=> Tkn0
-    x[5]=> Tkn0
-    x[6]=> Tke0
-    x[7]=> B0
-    x[8]=> Ps0
-    x[9]=> Pl0
-    x[10]=> Bm0
-    x[11]=> A0  
-    x[12]=> pi_v 
-    x[13]=> c_v1
-    x[14]=> c_v2
-    x[15]=> delta
-    x[16]=> k_v1
-    x[17]=> k_v2
-    x[18]=> alpha_Ap
-    x[19]=> beta_Ap
-    x[20]=> k_ap1
-    x[21]=> k_ap2
-    x[22]=>delta_Apm
-    x[23]=>alpha_Tn
-    x[24]=>pi_T
-    x[25]=>k_te1
-    x[26]=>delta_te
-    x[27]=>alpha_B
-    x[28]=>pi_B1
-    x[29]=>pi_B2
-    x[30]=>beta_S
-    x[31]=>beta_L
-    x[32]=>beta_Bm
-    x[33]=>delta_S
-    x[34]=>delta_L
-    x[35]=>gamma_M
-    x[36]=>k_bm1
-    x[37]=>k_bm2
-    x[38]=>pi_AS
-    x[39]=>pi_AL
-    x[40]=>delta_A_G
-    x[41]=>delta_A_M
-    x[42]=>c11
-    x[43]=>c12
-    x[44]=>c13
-    x[45]=>c14
-    x[46]=>Ap0 => homeostasis
-    x[47]=>Thn0 => homeostasis
-    x[48]=>Tkn0 => homeostasis
-    x[49]=> B0  => homeostasis
     '''
 
-    ts=45
+    ts=np.linspace(0,45,20000)
+    #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G
+    P0 = [x[0], 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0]
+    
+    #            pi_v,  c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,k_ap1,k_ap2,delta_Apm, alpha_Tn,    pi_T,   k_te1,delta_te,alpha_B,     pi_B1,   pi_B2,
+    #beta_S,   beta_L, beta_Bm,delta_S,    delta_L, gamma_M, k_bm1,    k_bm2, pi_AS,  pi_AL,delta_A_G, delta_A_M,       c11,     c12,  c13,  c14, Ap0, Thn0,
+    #Tkn0
+    model_args = (x[1], 2.63, 0.60, x[2], x[3], 2.50E-03, 5.5e-01, 0.8, 40.0,      x[4], 2.17E-04, 1.0E-05, 1.0E-08,  0.0003,   x[5], 4.826E-06, 1.27E-8, 0.000672, 5.61E-06, 1.0E-06,   2.0, 2.3976E-04, 9.75E-04, 1.0e-5, 2500.0, 0.002,0.00068,     x[6],       x[7], 2.17E-04, 1.0E-07, 1.0E-08, 0.22, 1.0e6, 1.0e6, 5.0e5, 2.5E5)
 
-    P0 = (x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11])
-    model_args = (x[12], x[13], x[14], x[15], x[16], x[17], x[18], x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26], x[27], x[28], x[29], x[30], x[31], x[32], x[33], x[34], x[35], x[36], x[37], x[38], x[39], x[40], x[41], x[42], x[43], x[44], x[45], x[46], x[47], x[48], x[49])
-
-    Ps = odeint(immune_response, P0, ts, args=(model_args), full_output=True, printmessg=True) 
+    Ps,d = odeint(immune_response, P0, ts, args=(model_args), full_output=True, printmessg=True) 
 
     V=Ps[:,0] # virus
     A_m=Ps[:,11] # antibody
@@ -144,7 +106,8 @@ if __name__ == "__main__":
     c0,c1 = exp_mmq(dia[:opt_last], virus[:opt_last])
     
     #define os bounds para cada um dos parâmetros
-    bounds = [(1,999), (1.0e6,1.0e7), (0.0, 1.0), (1.0e5,1.0e7),(0.0,1.0),(1.0e4,1.0e6),(1.0e3,9.0e5),(0.0,1.0),(1.0e3,9.9e5),(0.0,1.0),(0.0,1.0),(0.0,1.0),(0.0,1.0),(0.0,1.0), (1.1, 1.9), (2.1, 2.9), (0.1, 0.9), (0.0001, 0.0009), (1.0E-06, 1.0E-05), (1.0E-03, 1.0E-02), (1.0E-01, 1.0E-00), (0.1, 0.8), (10.0, 90.0), (1.0E-01, 1.0E-00), (1.0E-04, 1.0E-03), (1.0E-05, 1.0E-04), (1.0E-08, 1.0E-07), (0.1,0.9), (1.0E+00,1.0E+01), (1.0E-06,1.0E-05), (1.0E-8,1.0E-9), (0.0001,0.0009), (1.0E-06,1.0E-05), (1.0E-06,1.0E-05), (1.0,9.0), (1.0E-04,1.0E-03), (1.0E-04,1.0E-03), (1.0E-5,1.0E-4),(2000.0,3000.0), (0.001,0.009), (0.0001,0.0009), (0.01,0.09), (0.01,0.09), (1.0E-04,1.0E-03), (1.0E-07,1.0E-06), (1.0E-08,1.0E-07), (0.1,0.9),(1.0E6,1.0E7), (1.0E6,1.0E7), (1.0E5,1.0E6), (1.0E1,1.9E1)]
+    #          V0    ,  PI_V,   k_v1        , k_v2           , delta_Apm        , alpha_B         , delta_A_G,  delta_A_M
+    bounds = [(1,999), (1.0,2.0), (1.0E-4,1.0E-3), (1.0E-6,1.0E-5), (1.0E-01, 1.08E0), (1.0E+00,1.0E+01), (0.01,0.1), (0.01,0.1)]
 
     #chama a evolução diferencial que o result contém o melhor individuo
     result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20)
