@@ -74,17 +74,17 @@ def model(x):
     #Viremia error 
     #virus represents experimental data, V the numerical one 
     virus_aux = np.multiply(virus, mask_virus)
-    V_aux = np.multiply(V[:opt_last], mask_virus[first_day:opt_last])
+    V_aux = np.multiply(np.log10(V[:opt_last]), mask_virus[first_day:opt_last])
     erro_V = np.linalg.norm(virus_aux[first_day:opt_last]-V_aux, np.inf)/np.linalg.norm(virus_aux[first_day:opt_last], np.inf)
     
     #antibody G
     antibody_g_aux = np.multiply(antibody_g, mask_antibodies)
-    IgG_aux = np.multiply(A_g[:opt_last], mask_antibodies[first_day:opt_last])
+    IgG_aux = np.multiply(np.log2(A_g[:opt_last]), mask_antibodies[first_day:opt_last])
     erro_IgG = np.linalg.norm(antibody_g_aux[first_day:opt_last]-IgG_aux, np.inf)/np.linalg.norm(antibody_g_aux[first_day:opt_last], np.inf)
 
     #antibody M
     antibody_m_aux = np.multiply(antibody_m, mask_antibodies)
-    IgM_aux = np.multiply(A_m[:opt_last], mask_antibodies[first_day:opt_last])
+    IgM_aux = np.multiply(np.log2(A_m[:opt_last]), mask_antibodies[first_day:opt_last])
     erro_IgM = np.linalg.norm(antibody_m_aux[first_day:opt_last]-IgM_aux, np.inf)/np.linalg.norm(antibody_m_aux[first_day:opt_last], np.inf)
 
     
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     #chama a evolução diferencial que o result contém o melhor individuo
     result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20)
     print('Params order: ')
-    print ('pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2, delta_Apm, alpha_Tn, pi_T, k_te1, delta_te, alpha_B, pi_B1, pi_B2, beta_S, beta_L, beta_Bm, delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS, pi_AL, delta_A_G, delta_A_M, c11, c12, c13, c14, Ap0, Thn0, Tkn0, B0')
+    print ('V0, pi_v,k_v1, k_v2, delta_Apm, alpha_B, delta_A_G,delta_A_M')
     print(result.x)
     #saving the best offspring...
     np.savetxt('params_simple.txt',result.x)
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     ax1.set_title('Viremia and Antibodies')
     
     #Plot active infected cases
-    ax1.plot(ts, log10(V), label='Viremia model', linewidth=4)
+    ax1.plot(ts, np.log10(V), label='Viremia model', linewidth=4)
     ax1.plot(ts, virus[first_day:], label='data', linewidth=4)
     ax1.set_xlabel('day')
     ax1.set_ylabel('log 10(copies/ml)')    
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     ax1.grid()
         
     #Plot death cases 
-    ax2.plot(ts, log2(A_g), label='IgG model', linewidth=4)
+    ax2.plot(ts, np.log2(A_g), label='IgG model', linewidth=4)
     ax2.plot(ts, antibody_g[first_day:], label='data', linewidth=4)
     ax2.set_xlabel('day')
     ax2.set_ylabel('log 2(S/CO)')
