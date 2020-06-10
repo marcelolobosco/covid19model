@@ -20,7 +20,7 @@ path = '../../data/'
 
 # global data
 # ajustar pela viremia e anticorpos
-dadosViremiaLog10 = pd.read_csv(path+'Viral_load_10_2.csv',';')
+dadosViremiaLog10 = pd.read_csv(path+'Viral_load_10_2.csv',',')
 dadosAnticorposLog2 = pd.read_csv(path+'IgG_IgM_21_1b_average.csv',',')
 
 #casos = np.loadtxt(path+'active_world.txt');
@@ -36,8 +36,8 @@ antibody_m = dadosAnticorposLog2['IgM']
 #recovery = np.loadtxt(path+'recovered_Germany.txt');
 
 # ones in days to be considered and zero otherwise
-mask_virus     =[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-mask_antibodies=[0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+mask_virus     =[0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+mask_antibodies=[0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 execution_de =  []
 
@@ -56,7 +56,7 @@ def model(x):
     
     '''
 
-    ts=np.linspace(0,45,20000)
+    ts=np.linspace(0,42,20000)#range(45)
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G
     P0 = [x[0], 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0]
     
@@ -70,7 +70,7 @@ def model(x):
     V=Ps[:,0] # virus
     A_m=Ps[:,11] # antibody
     A_g=Ps[:,12] # antibody
-    
+
     #Viremia error 
     #virus represents experimental data, V the numerical one 
     virus_aux = np.multiply(virus, mask_virus)
@@ -100,7 +100,7 @@ def model_adj(x):
 
 if __name__ == "__main__":    
         	
-    opt_last =  45 # os ultimos opt_last dias não serão contados para o ajuste se o valor for negativo, coloque o tamanho do vetor (len(infected)) caso queira considerar todos
+    opt_last =  42 # os ultimos opt_last dias não serão contados para o ajuste se o valor for negativo, coloque o tamanho do vetor (len(infected)) caso queira considerar todos
     
     #for use in P(t) = c0*exp(c1*t)
     c0,c1 = exp_mmq(dia[:opt_last], virus[:opt_last])
