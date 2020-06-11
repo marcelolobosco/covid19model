@@ -17,7 +17,7 @@ import math
 sns.set_style("whitegrid")
 
 #######  CONDIÇÕES INICIAIS PARA AJUSTE DE UNIDADES
-V0 = 10 #  infectious dose # 27476.0 IU/0.5ml  ---->  5 IU/ml diluído em 5500ml de sangue do corpo  ----> 
+V0 = 100 #  infectious dose # 27476.0 IU/0.5ml  ---->  5 IU/ml diluído em 5500ml de sangue do corpo  ----> 
 ###  x1.91 = 9.55 PFU/ml no corpo = 0.98log10 PFU/ml no corpo   ------> 3.89 log10 copias/ml no corpos (*) = 7728.0 copias/ml
 ###(*)  log10 PFU/ml = [0.974 x log10 copias/ml] - 2.807
 Ap0 = 1.0e6
@@ -33,22 +33,20 @@ Bm0 = 0.0
 A0_M = 0.0  
 A0_G = 0.0
 
-model_args = (1.25, 2.63, 0.60, 0.000120532191*0.4, 1.87E-06*0.4, 2.50E-03, 5.5e-01,
-                     0.8, 40.0, 5.38E-01, 2.17E-04, 1.0E-05, 1.0E-08, 0.1*0.003,
-                     6.0E+00, 4.826E-06, 1.27E-10*100.0, 0.000672, 5.61E-06, 1.0E-06,
-                     2.0, (2.22E-04)*1.8*0.6, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.002,
-                     0.00068, 0.04, 0.08, 2.17E-04, 1.0E-07, 1.0E-08, 0.22)
+model_args = (1.31, 2.63, 0.60, 0.000120532191*0.4, 1.87E-06*0.4, 2.50E-03, 5.5e-01, 0.8, 40.0,      5.38E-01, 2.17E-04, 1.0E-05, 1.0E-08,  0.0003,   6.0E+00, 4.826E-06, 1.27E-8, 0.000672, 5.61E-06, 1.0E-06,   2.0, 2.3976E-04, 9.75E-04, 1.0e-5, 2500.0, 0.002,0.00068,     0.01,       4.826E-06, 2.17E-04, 1.0E-07, 1.0E-08, 0.22, 1.0e6, 1.0e6, 5.0e5, 2.5E5)#,2.63, 0.60, 9.80167723e-02, 6.40994768e-05, 1.87E-06*0.4, 2.50E-03, 5.5e-01, 0.8, 40.0, 8.14910996e+00, 2.17E-04, 1.0E-05, 1.0E-08, 0.1*0.003, 6.55248840e+01, 4.826E-06, 1.27E-10*100.0, 0.000672, 5.61E-06, 1.0E-06, 2.0, (2.22E-04)*1.8*0.6, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.002, 0.00068, 8.00694162e-02, 3.06889922e-01, 2.17E-04, 1.0E-07, 1.0E-08, 0.22)
 
 t=np.linspace(0,45,20000)    
-y,d=integrate.odeint(immune_response, [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G], t, args=(model_args), full_output=True, printmessg=True)
+y,d=integrate.odeint(immune_response, [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G], t, args=(model_args), full_output=1, printmessg=True)
 
 
 #######   Viremia  log10 copias/ml ##########
-dadosViremiaLog10 = pd.read_csv('../../data/Viral_load_10_2.csv',';')
+dadosViremiaLog10 = pd.read_csv('../../data/Viral_load_10_2.csv',',')
 dadosAnticorposLog2 = pd.read_csv('../../data/IgG_IgM_21_1b.csv',',') 
 
 media_igG =[]
 media_igM = []
+
+#correto calcular media geometrica de valores em log2?
 for x,df in dadosAnticorposLog2.groupby(['Interval']):
     media_igG.append({'grupo':x,
                     'm_igg':gmean(df['IgG'])})
@@ -60,17 +58,23 @@ media_igM = pd.DataFrame(media_igM)
 means_igG= [media_igG.iloc[0,1],media_igG.iloc[1,1],media_igG.iloc[2,1],media_igG.iloc[3,1]]
 means_igM= [media_igM.iloc[0,1],media_igM.iloc[1,1],media_igM.iloc[2,1],media_igM.iloc[3,1]]
 
+#tirando dia 0 para a media geometrica dos 7 primeiros dias ser diferente de zero
+means_numerica_igG =[np.log2(gmean(y[1:7,11])+1),np.log2(gmean(y[8:14,11])+1),np.log2(gmean(y[15:21,11])+1),np.log2(gmean(y[22:27,11])+1)]
+means_numerica_igM =[np.log2(gmean(y[1:7,12])+1),np.log2(gmean(y[8:14,12])+1),np.log2(gmean(y[15:21,12])+1),np.log2(gmean(y[22:27,12])+1)]
+
 dataset=pd.melt(dadosAnticorposLog2,id_vars=['Interval'], var_name='Antibody Type',value_name='Log 2 (Antibody Level)')
 
 sns.boxplot(x='Interval', y='Log 2 (Antibody Level)',data=dataset,hue='Antibody Type', palette="Set3",showfliers=False, order=['0-7','8-14','15-21','22-27'])
 pylab.scatter([-0.2,0.8,1.8,2.8], means_igG,marker='D',color='red',label='GMT Dados IgG')
 pylab.scatter([0.2,1.2,2.2,3.2], means_igM,marker='D',color='blue',label='GMT Dados IgM')
+pylab.scatter([-0.2,0.8,1.8,2.8], means_numerica_igG,marker='D',color='green',label='GMT Numerico IgG')
+pylab.scatter([0.2,1.2,2.2,3.2], means_numerica_igM,marker='D',color='yellow',label='GMT Numerico IgM')
     
 plt.figure('CurvaAjuste1')
 plt.xlim(0.0,45.0)
 #plt.ylim(0.0,8.0)
-plt.plot(t,np.log2(y[:,11]),label='IgM Modelo',linewidth=1.5, linestyle="-")
-plt.plot(t,np.log2(y[:,12]),label='IgG Modelo',linewidth=1.5, linestyle="-")
+plt.plot(t,np.log2(y[:,11]+1),label='IgM Modelo',linewidth=1.5, linestyle="-")
+plt.plot(t,np.log2(y[:,12]+1),label='IgG Modelo',linewidth=1.5, linestyle="-")
 plt.xlabel('Tempo pós-infecção (dias)')
 plt.ylabel('Anticorpos - log 2 S/CO')
 plt.legend()
