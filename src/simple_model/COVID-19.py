@@ -17,7 +17,7 @@ import math
 sns.set_style("whitegrid")
 
 #######  CONDIÇÕES INICIAIS PARA AJUSTE DE UNIDADES
-V0 = 100 #  infectious dose # 27476.0 IU/0.5ml  ---->  5 IU/ml diluído em 5500ml de sangue do corpo  ----> 
+V0 = 1000 #  infectious dose # 27476.0 IU/0.5ml  ---->  5 IU/ml diluído em 5500ml de sangue do corpo  ----> 
 ###  x1.91 = 9.55 PFU/ml no corpo = 0.98log10 PFU/ml no corpo   ------> 3.89 log10 copias/ml no corpos (*) = 7728.0 copias/ml
 ###(*)  log10 PFU/ml = [0.974 x log10 copias/ml] - 2.807
 Ap0 = 1.0e6
@@ -33,9 +33,9 @@ Bm0 = 0.0
 A0_M = 0.0  
 A0_G = 0.0
 
-model_args = (1.31, 2.63, 0.60, 0.000120532191*0.4, 1.87E-06*0.4, 2.50E-03, 5.5e-01, 0.8, 40.0,      5.38E-01, 2.17E-04, 1.0E-05, 1.0E-08,  0.0003,   6.0E+00, 4.826E-06, 1.27E-8, 0.000672, 5.61E-06, 1.0E-06,   2.0, 2.3976E-04, 9.75E-04, 1.0e-5, 2500.0, 0.002,0.00068,     0.01,       4.826E-06, 2.17E-04, 1.0E-07, 1.0E-08, 0.22, 1.0e6, 1.0e6, 5.0e5, 2.5E5)#,2.63, 0.60, 9.80167723e-02, 6.40994768e-05, 1.87E-06*0.4, 2.50E-03, 5.5e-01, 0.8, 40.0, 8.14910996e+00, 2.17E-04, 1.0E-05, 1.0E-08, 0.1*0.003, 6.55248840e+01, 4.826E-06, 1.27E-10*100.0, 0.000672, 5.61E-06, 1.0E-06, 2.0, (2.22E-04)*1.8*0.6, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.002, 0.00068, 8.00694162e-02, 3.06889922e-01, 2.17E-04, 1.0E-07, 1.0E-08, 0.22)
+model_args = (1.32, 2.63, 0.60, 0.000120532191*0.4, 1.87E-06*0.4, 2.50E-03, 5.5e-01, 0.8, 40.0,      5.38E-01, 2.17E-04, 1.0E-05, 1.0E-08,  0.0003,   6.0E+00, 4.826E-06, 1.27E-8, 0.000672, 5.61E-06, 1.0E-06,   2.0, 2.3976E-04, 9.75E-04, 1.0e-5, 2500.0, 0.002,0.00068,     0.01,       4.826E-06, 2.17E-04, 1.0E-07, 1.0E-08, 0.22, 1.0e6, 1.0e6, 5.0e5, 2.5E5)#,2.63, 0.60, 9.80167723e-02, 6.40994768e-05, 1.87E-06*0.4, 2.50E-03, 5.5e-01, 0.8, 40.0, 8.14910996e+00, 2.17E-04, 1.0E-05, 1.0E-08, 0.1*0.003, 6.55248840e+01, 4.826E-06, 1.27E-10*100.0, 0.000672, 5.61E-06, 1.0E-06, 2.0, (2.22E-04)*1.8*0.6, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.002, 0.00068, 8.00694162e-02, 3.06889922e-01, 2.17E-04, 1.0E-07, 1.0E-08, 0.22)
 
-t=np.linspace(0,45,20000)    
+t=np.linspace(0,45,180)    
 y,d=integrate.odeint(immune_response, [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G], t, args=(model_args), full_output=1, printmessg=True)
 
 
@@ -59,8 +59,9 @@ means_igG= [media_igG.iloc[0,1],media_igG.iloc[1,1],media_igG.iloc[2,1],media_ig
 means_igM= [media_igM.iloc[0,1],media_igM.iloc[1,1],media_igM.iloc[2,1],media_igM.iloc[3,1]]
 
 #tirando dia 0 para a media geometrica dos 7 primeiros dias ser diferente de zero
-means_numerica_igG =[np.log2(gmean(y[1:7,11])+1),np.log2(gmean(y[8:14,11])+1),np.log2(gmean(y[15:21,11])+1),np.log2(gmean(y[22:27,11])+1)]
-means_numerica_igM =[np.log2(gmean(y[1:7,12])+1),np.log2(gmean(y[8:14,12])+1),np.log2(gmean(y[15:21,12])+1),np.log2(gmean(y[22:27,12])+1)]
+n=4
+means_numerica_igG =[np.log2(gmean(y[1*n:7*n,11])+1),np.log2(gmean(y[8*n:14*n,11])+1),np.log2(gmean(y[15*n:21*n,11])+1),np.log2(gmean(y[22*n:27*n,11])+1)]
+means_numerica_igM =[np.log2(gmean(y[1*n:7*n,12])+1),np.log2(gmean(y[8*n:14*n,12])+1),np.log2(gmean(y[15*n:21*n,12])+1),np.log2(gmean(y[22*n:27*n,12])+1)]
 
 dataset=pd.melt(dadosAnticorposLog2,id_vars=['Interval'], var_name='Antibody Type',value_name='Log 2 (Antibody Level)')
 
@@ -69,7 +70,7 @@ pylab.scatter([-0.2,0.8,1.8,2.8], means_igG,marker='D',color='red',label='GMT Da
 pylab.scatter([0.2,1.2,2.2,3.2], means_igM,marker='D',color='blue',label='GMT Dados IgM')
 pylab.scatter([-0.2,0.8,1.8,2.8], means_numerica_igG,marker='D',color='green',label='GMT Numerico IgG')
 pylab.scatter([0.2,1.2,2.2,3.2], means_numerica_igM,marker='D',color='yellow',label='GMT Numerico IgM')
-    
+plt.legend()    
 plt.figure('CurvaAjuste1')
 plt.xlim(0.0,45.0)
 #plt.ylim(0.0,8.0)
