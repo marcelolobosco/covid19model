@@ -126,7 +126,7 @@ if __name__ == "__main__":
     
     #define os bounds para cada um dos parâmetros
     #           V0    ,   PI_V   ,    k_v1        , k_v2           , delta_Apm        ,  alpha_B         , delta_A_G , delta_A_M ,     pi_camp    ,    pi_cthe    ,    pi_ctke    ,      pi_cb    , delta_c  
-    bounds = [(1,1000), (1.1,1.4), (1.0E-4,1.0E-1), (1.0E-6,1.0E-4), (1.0E-01, 1.08E1), (1.0E+00,1.0E+02), (0.01,1.0), (0.01,1.0),(1.0e-6, 5.0e-6),(8.0e-6,1.0e-5),(7.0e-7,1.0e-6),(1.0e-6,9.0e-6),(0.1,1.0)]
+    bounds = [(1,1000), (1.1,1.4), (1.0E-4,1.0E-1), (1.0E-6,1.0E-4), (1.0E-01, 1.08E1), (1.0E+00,1.0E+02), (0.01,1.0), (0.01,1.0),(3.5e-6,5.5e-6),(7.0e-6,1.5e-5),(9.5e-7,1.3e-6),(1.0e-6,6.0e-6),(0.1,0.35)]
 
     #chama a evolução diferencial que o result contém o melhor individuo
     result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, workers=2)
