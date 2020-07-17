@@ -20,7 +20,7 @@ sns.set_style("whitegrid")
 V0 = 1.0#  infectious dose # 27476.0 IU/0.5ml  ---->  5 IU/ml diluído em 5500ml de sangue do corpo  ----> 
 ###  x1.91 = 9.55 PFU/ml no corpo = 0.98log10 PFU/ml no corpo   ------> 3.89 log10 copias/ml no corpos (*) = 7728.0 copias/ml
 ###(*)  log10 PFU/ml = [0.974 x log10 copias/ml] - 2.807
-Ap0 = 1.0e6
+Ap0 = 1.0e6#0.6e6
 Apm0 = 0.0
 Ai0=0
 C0=0
@@ -40,7 +40,7 @@ A0_G = 0.0
 # delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
 # pi_AL, delta_A_G, delta_A_M antes 0.1, c11, c12, c13, c14, Ap0, Thn0, Tkn0, B0, pi_c_apm
 # pi_c_i,pi_c_tke,delta_c, k_apm, k_v3
-model_args = (1.2, 2.63, 0.60, 4.5e-05, 4.5e-05, 1.87E-06*0.4, 2.00E-03, 0.8, 40.0, 8.14910996e+00, 2.17E-04, 1.9E-05, 1.0E-08, 0.1*0.003, 6.55248840e+01, 2.826E-06, 1.27E-08, 0.000672, 5.61E-07, 1.0E-08, 1.5, 0.8, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.004, 0.0005, 8.00694162e-02, 5.06889922e-00, 2.17E-04, 1.0E-04, 1.0E-08, 0.22,1.0e6, 1.0e6, 5.0e5, 2.5E5,0.0000001,0.01,0.0000001,0.1,0.000007,1.0e-6)
+model_args = (1.2, 2.63, 0.60, 4.5e-05, 4.5e-05, 1.87E-06*0.4, 2.00E-03, 0.8, 40.0, 8.14910996e+00, 2.17E-04, 1.9E-05, 1.0E-08, 0.1*0.003, 6.55248840e+01, 2.826E-06, 1.27E-08, 0.000672, 5.61E-07, 1.0E-08, 1.5, 0.8, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.004, 0.0005, 8.00694162e-02, 5.06889922e-00, 2.17E-04, 1.0E-04, 1.0E-08, 0.22,1.0e6, 1.0e6, 5.0e5, 2.5E5,0.000015,0.015,0.000015,0.1,0.000007,1.0e-6)
 
 #1.3, 2.63, 0.60, 0.00004821287, 2.50E-05, 2.50E-03, 5.5e-01, 
 #              0.8, 40.0, 5.38E-01, 2.17E-04, 1.0E-05, 1.0E-08,  0.0003,   
@@ -64,6 +64,8 @@ y,d=integrate.odeint(immune_response, [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl
 #######   Viremia  log10 copias/ml ##########
 dadosViremiaLog10 = pd.read_csv('../../data/Viral_load_10_2.csv',',')
 dadosAnticorposLog2 = pd.read_csv('../../data/IgG_IgM_21_1b.csv',',') 
+dadosCitocinaObitos = pd.read_csv('../../data/IL6_non-survivors_19.csv',',')
+dadosCitocinaSobreviventes = pd.read_csv('../../data/IL6_survivors_19.csv',',')
 
 media_igG =[]
 media_igM = []
@@ -216,6 +218,7 @@ plt.legend()
 plt.savefig('Ai.pdf',bbox_inches='tight',dpi = 300)
 
 plt.figure('C')
+dadosCitocinaSobreviventes.plot.scatter(x='Day',y='IL6(pg/mL)',color='g',label='Dados experimentais(Sobreviventes)')
 plt.xlim(0.0,dias_de_simulação)
 #plt.ylim(0.0,8.0)
 plt.plot(t,y[:,14],label='C',linewidth=1.5, linestyle="-")
@@ -223,5 +226,15 @@ plt.xlabel('Tempo pós-vacinação (dias)')
 plt.ylabel('C')
 plt.legend()
 plt.savefig('C.pdf',bbox_inches='tight',dpi = 300)
+
+plt.figure('C')
+dadosCitocinaObitos.plot.scatter(x='Day',y='IL6(pg/mL)',color='y',label='Dados experimentais(Obito)')
+plt.xlim(0.0,dias_de_simulação)
+#plt.ylim(0.0,8.0)
+plt.plot(t,y[:,14],label='C',linewidth=1.5, linestyle="-")
+plt.xlabel('Tempo pós-vacinação (dias)')
+plt.ylabel('C')
+plt.legend()
+plt.savefig('C2.pdf',bbox_inches='tight',dpi = 300)
 
 #plt.show() 
