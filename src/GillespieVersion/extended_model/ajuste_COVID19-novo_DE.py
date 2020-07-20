@@ -55,7 +55,7 @@ def model(x):
     x[13]=>Ag0
     '''
 
-    ts=range(len(virus))  
+    ts=range(len(mask_virus))  
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     P0 = [x[11], 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, x[12], x[13], 0.0, 0.0]
@@ -73,7 +73,6 @@ def model(x):
     V=Ps[:,0] # virus
     A_m=Ps[:,11] # antibody
     A_g=Ps[:,12] # antibody
-    
     erro_V = 0;
     erro_IgG = 0;
     erro_IgM = 0;
@@ -115,58 +114,55 @@ def model_adj(x):
 
 if __name__ == "__main__":    
         	
+    opt_last =  42 # os ultimos opt_last dias não serão contados para o ajuste se o valor for negativo, coloque o tamanho do vetor (len(infected)) caso queira considerar todos
+    
     #define os bounds para cada um dos parâmetros
+    '''
+    Params description:   
+    x[0]=>pi_v 
+    x[1]=>k_v3
+    x[2]=>delta_Apm
+    x[3]=>alpha_B
+    x[4]=>delta_A_G
+    x[5]=>delta_A_M
+    x[6]=>pi_c_apm, 
+    x[7]=>pi_c_i,
+    x[8]=>pi_c_tke,
+    x[9]=>delta_c, 
+    x[10]=>k_apm
+    x[6]=>V0
+    x[7]=>Am0
+    x[8]=>Ag0
+    '''
+    bounds = [
+    (1e-7,2), 
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1e-7,1e3),
+    (1,1e4),
+    (1,1e4),
+    (1,1e4)
+    ]
 
-    opt_de = False
-    if opt_de:
-        '''
-        Params description:   
-        x[0]=>pi_v 
-        x[1]=>k_v3
-        x[2]=>delta_Apm
-        x[3]=>alpha_B
-        x[4]=>delta_A_G
-        x[5]=>delta_A_M
-        x[6]=>pi_c_apm, 
-        x[7]=>pi_c_i,
-        x[8]=>pi_c_tke,
-        x[9]=>delta_c, 
-        x[10]=>k_apm
-        x[11]=>V0
-        x[12]=>Am0
-        x[13]=>Ag0
-        '''
-        bounds = [
-        (1e-2,1e3), 
-        (1e-7,1e3),
-        (1e-3,1e2),
-        (1e-3,1e2),
-        (1e-5,1e2),
-        (1e-5,1e2),
-        (1e-7,1e3),
-        (1e-7,1e3),
-        (1e-7,1e3),
-        (1e-7,1e3),
-        (1e-7,1e3),
-        (1,1e3),
-        (1,1e4),
-        (1,1e4)
-        ]
-        #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=3)
-        print('Params order: ')
-        print ('V0, pi_v,k_v1, k_v2, delta_Apm, alpha_B, delta_A_G,delta_A_M')
-        print(result.x)
-        #saving the best offspring...
-        np.savetxt('params_simple.txt',result.x)
-        best=result.x
-    else:
-        best = np.loadtxt('params_simple.txt')
+    #chama a evolução diferencial que o result contém o melhor individuo
+    result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True,workers=3)
+    print('Params order: ')
+    print ('V0, pi_v,k_v1, k_v2, delta_Apm, alpha_B, delta_A_G,delta_A_M')
+    print(result.x)
+    #saving the best offspring...
+    np.savetxt('params_simple.txt',result.x)
     
     #saving the samples for UQ
     #np.savetxt('execution_de_100_ge.txt',execution_de)
    
-    erro, V, A_m, A_g, ts, erro_V, erro_IgM, erro_IgG = model(best)
+    erro, V, A_m, A_g, ts, erro_V, erro_IgM, erro_IgG = model(result.x)
     print("RELATIVE ERROR")
     print("Erro viremia: ", erro_V)
     print("Erro IgM: ", erro_IgM)
@@ -182,23 +178,23 @@ if __name__ == "__main__":
     ax1.plot(ts, V, label='Viremia model', linewidth=4)
     ax1.plot(ts, virus[first_day:], label='data', linewidth=4)
     ax1.set_xlabel('day')
-    ax1.set_ylabel('(copies/ml)')    
+    ax1.set_ylabel('log 10(copies/ml)')    
     ax1.legend()
     ax1.grid()
         
     #Plot death cases 
-    ax2.plot(ts, A_g, label='IgG model', linewidth=4)
+    ax2.plot(ts, np.log2(A_g), label='IgG model', linewidth=4)
     ax2.plot(ts, antibody_g[first_day:], label='data', linewidth=4)
     ax2.set_xlabel('day')
-    ax2.set_ylabel('(S/CO)')
+    ax2.set_ylabel('log 2(S/CO)')
     ax2.legend()
     ax2.grid()
 
     #Plot recovery cases 
-    ax3.plot(ts, A_m, label='model', linewidth=4)
+    ax3.plot(ts, log2(A_m), label='model', linewidth=4)
     ax3.plot(ts, antibody_m[first_day:], label='data', linewidth=4)
     ax3.set_xlabel('day')
-    ax3.set_ylabel('(S/CO)')
+    ax3.set_ylabel('log 2(S/CO)')
     ax3.legend()
     ax3.grid()
     
