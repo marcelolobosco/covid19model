@@ -68,7 +68,7 @@ def model(x):
     ts=range(len(virus))  
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    V0 = x[8] 
+    V0 = x[0] # 2.136323495622534097e+00
     Ap0 = 1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
@@ -107,11 +107,11 @@ def model(x):
     5.06889922e-00, 2.17E-04, 1.0E-04, 1.0E-08, 0.22,1.0e6, 1.0e6, 5.0e5, 2.5E5,0.000015,0.015,0.000015,0.1,0.000007,1.0e-6)
     '''
     
-    pi_v = x[0] #ajuste
+    pi_v = 1.091710061112672880e-01#x[0] #ajuste
     c_v1 = 2.63
     c_v2 = 0.60
-    k_v1 = x[1]#4.5e-05 #ajustar
-    k_v2 = x[2]#4.5e-05 #ajustar
+    k_v1 = 5.600298025616778555e-05#x[1]#4.5e-05 #ajustar
+    k_v2 = 6.011588247777179580e-05#x[2]#4.5e-05 #ajustar
     alpha_Ap = 1.87E-06*0.4
     beta_Ap = 2.00E-03
     k_ap1 = 0.8  
@@ -119,11 +119,11 @@ def model(x):
     
     delta_Apm = 8.14910996e+00 # ou ajuste carla 5.38E-01
     alpha_Tn =2.17E-04 
-    pi_T = x[3]#1.9E-05 #ajustar
+    pi_T = 1.431849023090428446e-05#x[3]#1.9E-05 #ajustar
     k_te1 = 1.0E-08 
     delta_te = 0.0003
-    alpha_B = x[9] #ajuste
-    pi_B1 = x[10]#2.826E-06 #ajuste
+    alpha_B = 3.578236584371140339e+02#x[9] #ajuste
+    pi_B1 = 8.979145365768647095e-05#x[10]#2.826E-06 #ajuste
     pi_B2 = 1.27E-8
     
     beta_S = 0.000672 
@@ -134,10 +134,10 @@ def model(x):
     gamma_M = (1.95E-06)*500.0
     k_bm1 = 1.0e-5      
     k_bm2 = 2500.0 
-    pi_AS = x[4]#0.004 #ajuste
-    pi_AL = x[5]#0.0005 #ajuste
-    delta_A_G = x[6] #ajuste
-    delta_A_M = x[7] #ajuste
+    pi_AS = 2.850370072424884479e-02#x[4]#0.004 #ajuste
+    pi_AL = 6.304459239904726120e-01#x[5]#0.0005 #ajuste
+    delta_A_G = 3.650482092015642221e-01#x[6] #ajuste
+    delta_A_M = 6.873347140815699419e+00#x[7] #ajuste
     c11 = 2.17E-04
     c12 = 1.0E-07
     c13 = 1.0E-08  
@@ -146,12 +146,12 @@ def model(x):
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
-    pi_c_apm = 0.000015# x[11] #ajuste
-    pi_c_i = 0.015#x[12] #ajuste
-    pi_c_tke = 0.000015#x[13] #ajuste
-    delta_c = 0.1#x[14]#ajuste
-    k_apm = 0.000007#x[15]  #ajuste
-    k_v3 = 1.0e-6#x[16]#ajuste
+    pi_c_apm = x[1]#0.000015#  #ajuste
+    pi_c_i = x[2]#0.015#ajuste
+    pi_c_tke = x[3]#0.000015 #ajuste
+    delta_c = x[4]#0.1#ajuste
+    k_apm = x[5]#0.000007 #ajuste
+    k_v3 = x[6]#1.0e-6#ajuste
     
     
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
@@ -206,19 +206,21 @@ def model(x):
 
     #cytokine il-6
     il6data_aux = np.multiply(il6_data, mask_cytokine)
-    il6_aux = np.multiply(il6, mask_cytokine[first_day:])
+    il6_aux = np.multiply(il6, mask_cytokine)
+    #print(il6_aux)
     erro_il6 = np.linalg.norm(il6data_aux[first_day:]-il6_aux, vnorm)/np.linalg.norm(il6data_aux[first_day:], vnorm)
     #print(antibody_m_aux[first_day:]-IgM_aux)
     if (math.isnan(erro_il6) or math.isinf(erro_il6)):
         erro_il6 = 1e12    
     
     weight = 0.5
-    erro = weight*erro_IgG + weight*erro_IgM + erro_V
+    erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6*2
     '''
     print("RELATIVE ERROR")
     print("Erro viremia: ", erro_V)
     print("Erro IgM: ", erro_IgM)
     print("Erro IgG: ", erro_IgG)
+    print("Erro il6: ", erro_il6)
     '''
     #erro = erro_V
 
@@ -235,77 +237,26 @@ if __name__ == "__main__":
 
     opt_de = True
     if opt_de:
-        '''
-        Params description:   
-        x[0]=>pi_v 
-        x[1]=>k_v3
-        x[2]=>delta_Apm
-        x[3]=>alpha_B
-        x[4]=>delta_A_G
-        x[5]=>delta_A_M
-        x[6]=>pi_c_apm, 
-        x[7]=>pi_c_i,
-        x[8]=>pi_c_tke,
-        x[9]=>delta_c, 
-        x[10]=>k_apm
-        x[11]=>V0
-        beta_s 
-        beta_l	
-        pi_AS
-        pi_AL
-        
+
         bounds = [
-        (1e-2,1e1), 
-        (1e-7,1),
-        (1e-7,1),
-        (1e-7,1),
-        (1e-4,1e1),
-        (1e-5,1e1),
-        (1e-5,1e2),
-        (1e-5,1e2),
-        (1e-7,1),
-        (1e-7,1),
-        (1e-7,1),
-        (1e-7,1),
-        (1e-7,1e2),
-        (0,1e5),
-        (1e-7,1),
-        (1e-7,1),
-        (1e-7,1),
-        (1e-7,1)
-        ]
-        '''
-        bounds = [
-        (1e-1,2), 
-        (1e-6,1e-4),
-        (1e-6,1e-4),
-        (1e-7,1e-4),
-        (1e-5,1e1),
-        (1e-4,1),
-        (1e-3,1),
-        (1e-2,1e1),
-        (1e-5,1e3),
         (1e-2,1e3),
-        (1e-7,1e-4)
-        ]
-        '''
         (1e-7,1),
-        (1e-7,1e-3),
-        (1e-3,1),
-        (1e-3,1e-3),
-        (1e-7,1e-4),
-        (1e-7,1e-4),
-        '''
+        (1e-3,1e-1),
+        (1e-6,1e-1),
+        (1e-3,1e1),
+        (1e-7,1),
+        (1e-7,1e-2),
+        ]
         #chama a evolução diferencial que o result contém o melhor individuo
         result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=3)
         print('Params order: ')
-        print ('V0, pi_v,k_v1, k_v2, delta_Apm, alpha_B, delta_A_G,delta_A_M')
+        print ('...')
         print(result.x)
         #saving the best offspring...
-        np.savetxt('params_simple.txt',result.x)
+        np.savetxt('params_simple_cytokine.txt',result.x)
         best=result.x
     else:
-        best = np.loadtxt('params_simple.txt')
+        best = np.loadtxt('params_simple_cytokine.txt')
     
     #saving the samples for UQ
     #np.savetxt('execution_de_100_ge.txt',execution_de)
