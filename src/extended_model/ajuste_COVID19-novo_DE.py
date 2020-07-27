@@ -324,8 +324,8 @@ if __name__ == "__main__":
     ax1.set_title('Viremia and Antibodies')
     
     #Plot active infected cases
-    ax1.plot(ts, np.log10(V), label='Viremia model', linewidth=4)
-    ax1.plot(ts, np.log10(virus[first_day:]), 'o', label='data', linewidth=4)
+    ax1.plot(ts, V, label='Viremia model', linewidth=4)
+    ax1.plot(ts, virus[first_day:], 'o', label='data', linewidth=4)
     ax1.set_xlabel('day')
     ax1.set_ylabel('log10 (copies/ml)')    
     ax1.legend()
