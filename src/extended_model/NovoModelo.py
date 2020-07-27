@@ -26,7 +26,7 @@ def immune_response (P, t, pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,
 ####################################################################################
 #Equações
 ####################################################################################
-    dV_dt = pi_v*V - k_v1*V*A_M - k_v1*V*A_G - k_v2*V*Tke - k_v3*Apm #- ((c_v1*V)/(c_v2+V))
+    dV_dt = pi_v*V - k_v1*V*A_M - k_v1*V*A_G - k_v2*V*Tke - k_v3*V*Apm #- ((c_v1*V)/(c_v2+V))
     dAp_dt = C*(Ap0 - Ap) - beta_Ap*Ap*(k_ap1*(V)/(k_ap2 + V)) #alpha_Ap*(1+C)*(Ap0 - Ap) - beta_Ap*Ap*(k_ap1*(V)/(k_ap2 + V))
     dApm_dt = beta_Ap*Ap*(k_ap1*(V)/(k_ap2 + V)) - delta_Apm*Apm - k_apm * Apm * V
     dAi_dt = k_apm * Apm * V - delta_Apm*Ai
