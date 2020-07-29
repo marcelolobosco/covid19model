@@ -148,7 +148,7 @@ def model(x):
     B0 = 2.5E5
     pi_c_apm = x[1]#0.000015#  #ajuste
     pi_c_i = x[2]#0.015#ajuste
-    pi_c_tke = x[3]#0.000015 #ajuste
+    pi_c_tke = 0.04730172#x[3]#0.000015 #ajuste
     delta_c = x[4]#0.1#ajuste
     k_apm = x[5]#0.000007 #ajuste
     k_v3 = x[6]#1.0e-6#ajuste
@@ -167,7 +167,7 @@ def model(x):
     V=Ps[:,0] # virus
     A_m=Ps[:,11] # antibody
     A_g=Ps[:,12] # antibody
-    il6 = Ps[:,14] #Citocine
+    il6 = Ps[:,14] #citocine
     
     erro_V = 0;
     erro_IgG = 0;
@@ -215,7 +215,7 @@ def model(x):
         erro_il6 = 1e12    
     
     weight = 0.5
-    erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6*2
+    erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
     '''
     print("RELATIVE ERROR")
     print("Erro viremia: ", erro_V)
@@ -243,22 +243,22 @@ if __name__ == "__main__":
         (1e-2,1e3),
         (1e-7,1),
         (1e-3,1e-1),
-        (1e-6,1e-1),
+        (1e-2,1e-1),
         (1e-3,1e1),
         (1e-7,1),
-        (1e-7,1e-2),
+        (1e-10,1e-2),
         (1e-7,1)
         ]
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=2)
+        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=3)
         print('Params order: ')
         print ('...')
         print(result.x)
         #saving the best offspring...
-        np.savetxt('params_simple_cytokinev2.txt',result.x)
+        np.savetxt('params_simple_cytokinev3.txt',result.x)
         best=result.x
     else:
-        best = np.loadtxt('params_simple_cytokinev2.txt')
+        best = np.loadtxt('params_simple_cytokinev3.txt')
     
     #saving the samples for UQ
     #np.savetxt('execution_de_100_ge.txt',execution_de)
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     fig.set_size_inches(12, 25)
    
    
-    ax1.set_title('Viremia and Antibodies')
+    ax1.set_title('Viremia, Antibodies and Cytokines')
     
     #Plot active infected cases
     ax1.plot(ts, V, label='Viremia model', linewidth=4)

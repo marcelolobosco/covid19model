@@ -7,6 +7,39 @@ Created on Fri Sep 28 16:48:27 2018
 """
 from scipy import integrate
 import numpy as np
+
+def immune_response_v4 (P, t, pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,
+                     k_ap1, k_ap2, delta_Apm, alpha_Tn, pi_T, k_te1, delta_te,
+                     alpha_B, pi_B1, pi_B2, beta_S, beta_L, beta_Bm,
+                     delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
+                     pi_AL, delta_A_G, delta_A_M, c11, c12, c13, c14, Ap0, Thn0, Tkn0, B0, 
+                     pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3, k_tk):
+    """
+    Simple Model
+    """
+    V,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = P[0], P[1], P[2], P[3], P[4], P[5], P[6], P[7], P[8], P[9], P[10], P[11], P[12], P[13], P[14]
+
+    
+####################################################################################
+#Equações
+####################################################################################
+    dV_dt = pi_v*V - k_v1*V*A_M - k_v1*V*A_G - k_v2*V*Tke - k_v3*V*Apm #- ((c_v1*V)/(c_v2+V))
+    dAp_dt = C*(Ap0 - Ap) - beta_Ap*Ap*(k_ap1*(V)/(k_ap2 + V)) #alpha_Ap*(1+C)*(Ap0 - Ap) - beta_Ap*Ap*(k_ap1*(V)/(k_ap2 + V))
+    dApm_dt = beta_Ap*Ap*(k_ap1*(V)/(k_ap2 + V)) - delta_Apm*Apm - k_apm * Apm * V
+    dI_dt = k_apm * Apm * V + k_tk * Tke * V - delta_Apm*I
+    dThn_dt = c11*(Thn0 - Thn) - c12*Apm*Thn 
+    dThe_dt = c12*Apm*Thn + c13*Apm*The - c14*The
+    dTkn_dt = (C)*(Tkn0 - Tkn) - pi_T*(C+1)*Apm*Tkn #alpha_Tn*(1+C)*(Tkn0 - Tkn) - pi_T*Apm*Tkn
+    dTke_dt = pi_T*(C+1)*Apm*Tkn + k_te1*Apm*Tke - delta_te*Tke - k_tk * Tke * V
+    dB_dt = alpha_B*(B0 - B) + pi_B1*V*B + pi_B2*The*B - beta_S*Apm*B - beta_L*The*B - beta_Bm*The*B
+    dPs_dt = beta_S*Apm*B - delta_S*Ps
+    dPl_dt = beta_L*The*B - delta_L*Pl + gamma_M*Bm 
+    dBm_dt = beta_Bm*The*B + k_bm1*Bm*(1 - Bm/(k_bm2)) - gamma_M*Bm
+    dA_M_dt = pi_AS*Ps - delta_A_M*A_M # anticorpos vida curta
+    dA_G_dt = pi_AL*Pl - delta_A_G*A_G #memória imune
+    dC_dt = pi_c_apm *V*Apm + pi_c_i*I + pi_c_tke*V*Tke - delta_c * C
+    
+    return [dV_dt, dAp_dt, dApm_dt, dThn_dt, dThe_dt, dTkn_dt, dTke_dt, dB_dt, dPs_dt, dPl_dt, dBm_dt, dA_M_dt, dA_G_dt, dI_dt, dC_dt]
     
 
 def immune_response_v3 (P, t, pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,

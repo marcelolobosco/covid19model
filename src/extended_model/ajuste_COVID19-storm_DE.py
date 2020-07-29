@@ -68,11 +68,11 @@ def model(x):
     ts=range(len(virus))  
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    V0 = 3.47684822e+00#x[0]#2.68758852e+00 # 2.136323495622534097e+00
+    V0 = 4.59722506e+00#x[0]#2.68758852e+00 # 2.136323495622534097e+00
     Ap0 = 1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
-    C0=x[2]#0.0
+    C0=0.0
     Thn0 = (1.0e6)#*0.5
     The0 = 0.0  #### Convertendo de ul para ml
     Tkn0 = (1.0e3)*500.0#(1.0e3)*500.0
@@ -146,13 +146,15 @@ def model(x):
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
-    pi_c_apm = 7.41659768e-01#8.621433896994662449e-01 #x[1]#0.000015#  #ajuste
-    pi_c_i = 3.62818705e-03#5.619826917967409713e-02#x[2]#0.015#ajuste
-    pi_c_tke = 1.43864009e-01#4.24581665e-03#3.69333590e-03#2.529626114457017745e-03#x[3]#0.000015 #ajuste
-    delta_c = 7.13045560e+00#3.307713482905626279e+00#x[4]#0.1#ajuste
+    pi_c_apm = 4.52515051e-01#8.621433896994662449e-01 #x[1]#0.000015#  #ajuste
+    pi_c_i = 1.96382616e-03#5.619826917967409713e-02#x[2]#0.015#ajuste
+    pi_c_tke = 0.04730172#1.60504089e-02#4.24581665e-03#3.69333590e-03#2.529626114457017745e-03#x[3]#0.000015 #ajuste
+    delta_c = 9.94728039e+00#3.307713482905626279e+00#x[4]#0.1#ajuste
     k_apm = x[0]#x[5]#0.000007 #ajuste
-    k_v3 = 1.00000000e-07#2.282353546986449176e-03#x[6]#1.0e-6#ajuste
+    k_v3 = 3.25225701e-03#2.282353546986449176e-03#x[6]#1.0e-6#ajuste
     k_tk = x[1] 
+       
+ 
        
     
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
@@ -241,9 +243,9 @@ if __name__ == "__main__":
         
         bounds = [
         #(1e-2,1e3),
-        (0,1),
-        (0,1),
-        (0,1e1)
+        (1e-7,2),
+        (1e-7,1),
+        #(0,1)
         ]
         '''
         bounds = [
@@ -257,7 +259,7 @@ if __name__ == "__main__":
         ]
         '''
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=3)
+        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=40, disp=True, workers=3)
         print('Params order: ')
         print ('...')
         print(result.x)
@@ -281,7 +283,7 @@ if __name__ == "__main__":
     fig.set_size_inches(12, 25)
    
    
-    ax1.set_title('Viremia and Antibodies')
+    ax1.set_title('Viremia, Antibodies and Cytokines')
     
     #Plot active infected cases
     ax1.plot(ts, V, label='Viremia model', linewidth=4)
