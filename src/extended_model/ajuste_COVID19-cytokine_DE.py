@@ -152,16 +152,17 @@ def model(x):
     delta_c = x[4]#0.1#ajuste
     k_apm = x[5]#0.000007 #ajuste
     k_v3 = x[6]#1.0e-6#ajuste
+    k_tk = x[7]
     
     
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
     delta_Apm, alpha_Tn, pi_T, k_te1, delta_te, alpha_B, pi_B1, pi_B2, 
     beta_S, beta_L, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
     pi_AL, delta_A_G, delta_A_M, c11, c12, c13, c14, Ap0, Thn0, Tkn0, B0,  
-    pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3)      
+    pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3, k_tk)      
     
     
-    Ps= odeint(immune_response, P0, ts, args=(model_args)) 
+    Ps= odeint(immune_response_v3, P0, ts, args=(model_args)) 
 
     V=Ps[:,0] # virus
     A_m=Ps[:,11] # antibody
@@ -246,17 +247,18 @@ if __name__ == "__main__":
         (1e-3,1e1),
         (1e-7,1),
         (1e-7,1e-2),
+        (1e-7,1)
         ]
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=3)
+        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=2)
         print('Params order: ')
         print ('...')
         print(result.x)
         #saving the best offspring...
-        np.savetxt('params_simple_cytokine.txt',result.x)
+        np.savetxt('params_simple_cytokinev2.txt',result.x)
         best=result.x
     else:
-        best = np.loadtxt('params_simple_cytokine.txt')
+        best = np.loadtxt('params_simple_cytokinev2.txt')
     
     #saving the samples for UQ
     #np.savetxt('execution_de_100_ge.txt',execution_de)
