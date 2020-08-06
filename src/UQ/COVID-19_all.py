@@ -19,14 +19,14 @@ sns.set_style("whitegrid")
 output_path= './output/'
 
 
-V0 = 4.59722506e+00
-Ap0 = 1.0e6#0.6e6
+V0 = 2.18808824e+00
+Ap0 = 1.0e6
 Apm0 = 0.0
 Ai0=0
-C0=0.0
-Thn0 = (1.0e6)#*0.5
-The0 = 0.0  #### Convertendo de ul para ml
-Tkn0 = (1.0e3)*500.0#(1.0e3)*500.0
+C0=0
+Thn0 = (1.0e6)
+The0 = 0.0  
+Tkn0 = (1.0e3)*500.0
 Tke0 = 0.0
 B0 =  (1.0e3)*250.0
 Ps0 = 0.0
@@ -34,14 +34,15 @@ Pl0 = 0.0
 Bm0 = 0.0
 A0_M = 0.0  
 A0_G = 0.0
+
 P0 = [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G,Ai0,C0]
 
 
-pi_v = 1.091710061112672880e-01
+pi_v = 0.1955
 c_v1 = 2.63
 c_v2 = 0.60
-k_v1 = 5.600298025616778555e-05
-k_v2 = 6.011588247777179580e-05
+k_v1 = 3.5e-3
+k_v2 = 9.5e-5
 alpha_Ap = 1.87E-06*0.4
 beta_Ap = 2.00E-03
 k_ap1 = 0.8  
@@ -56,33 +57,35 @@ alpha_B = 3.578236584371140339e+02
 pi_B1 = 8.979145365768647095e-05
 pi_B2 = 1.27E-8
 
-beta_S = 0.000672 
-beta_L = 5.61E-06 
+beta_S = 6.0e-6
+beta_L = 5.0e-6
 beta_Bm = 1.0E-06
-delta_S = 1.5
-delta_L = 0.8
+delta_S = 2.5
+delta_L = 0.35
 gamma_M = (1.95E-06)*500.0
 k_bm1 = 1.0e-5      
 k_bm2 = 2500.0 
-pi_AS = 2.850370072424884479e-02
-pi_AL = 6.304459239904726120e-01
-delta_A_G = 3.650482092015642221e-01
-delta_A_M = 6.873347140815699419e+00
+pi_AS = 0.087
+pi_AL = 0.001
+delta_A_G = 0.07
+delta_A_M = 0.07
 c11 = 2.17E-04
-c12 = 1.0E-07
+c12 = 1.8e-5#1.0E-07
 c13 = 1.0E-08  
-c14 = 0.22
+c14 = 0.3
 Ap0 = 1.0e6
 Thn0 = 1.0e6
 Tkn0 = 5.0e5
 B0 = 2.5E5
-pi_c_apm = 4.52515051e-01
-pi_c_i = 1.96382616e-03
+
+
+pi_c_apm = 7.43773673e-01
+pi_c_i = 1.97895565e-02
 pi_c_tke = 0.04730172
-delta_c = 9.94728039e+00
-k_apm = 1.51576968e-01 
-k_v3 = 3.25225701e-03
-k_tk = 1.80727212e-01
+delta_c = 8.26307952e+00
+k_apm = 5.36139617e-01
+k_v3 = 3.08059068e-03
+k_tk = 2.10152618e-01
 
 model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
     delta_Apm, alpha_Tn, pi_T, k_te1, delta_te, alpha_B, pi_B1, pi_B2, 
