@@ -64,11 +64,12 @@ def model(x):
     x[12]=>Am0
     x[13]=>Ag0
     '''
-
+    
+    
     ts=range(len(virus))  
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    V0 = 4.59722506e+00#x[0]#2.68758852e+00 # 2.136323495622534097e+00
+    V0 = 2.18808824e+00#4.59722506e+00#x[0]#2.68758852e+00 # 2.136323495622534097e+00
     Ap0 = 1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
@@ -107,6 +108,7 @@ def model(x):
     5.06889922e-00, 2.17E-04, 1.0E-04, 1.0E-08, 0.22,1.0e6, 1.0e6, 5.0e5, 2.5E5,0.000015,0.015,0.000015,0.1,0.000007,1.0e-6)
     '''
     
+    '''
     pi_v = 1.091710061112672880e-01#x[0] #ajuste
     c_v1 = 2.63
     c_v2 = 0.60
@@ -146,17 +148,58 @@ def model(x):
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
-    pi_c_apm = 4.52515051e-01#8.621433896994662449e-01 #x[1]#0.000015#  #ajuste
-    pi_c_i = 1.96382616e-03#5.619826917967409713e-02#x[2]#0.015#ajuste
+    '''
+    
+    pi_v = 0.1955#1.091710061112672880e-01
+    c_v1 = 2.63
+    c_v2 = 0.60
+    k_v1 = 3.5e-3#5.600298025616778555e-05
+    k_v2 = 9.5e-5#6.011588247777179580e-05
+    alpha_Ap = 1.87E-06*0.4
+    beta_Ap = 2.00E-03
+    k_ap1 = 0.8  
+    k_ap2 = 40.0
+
+    delta_Apm = 8.14910996e+00 
+    alpha_Tn =2.17E-04 
+    pi_T = 1.431849023090428446e-05
+    k_te1 = 1.0E-08 
+    delta_te = 0.0003
+    alpha_B = 3.578236584371140339e+02
+    pi_B1 = 8.979145365768647095e-05
+    pi_B2 = 1.27E-8
+
+    beta_S = 6.0e-6#0.000672 
+    beta_L = 5.0e-6#5.61E-06 
+    beta_Bm = 1.0E-06
+    delta_S = 2.5
+    delta_L = 0.35
+    gamma_M = (1.95E-06)*500.0
+    k_bm1 = 1.0e-5      
+    k_bm2 = 2500.0 
+    pi_AS = 0.087#2.850370072424884479e-02
+    pi_AL = 0.001#6.304459239904726120e-01
+    delta_A_G = 0.07#3.650482092015642221e-01
+    delta_A_M = 0.07#6.873347140815699419e+00
+    c11 = 2.17E-04
+    c12 = 1.8e-5#1.0E-07
+    c13 = 1.0E-08  
+    c14 = 0.3#0.22
+    Ap0 = 1.0e6
+    Thn0 = 1.0e6
+    Tkn0 = 5.0e5
+    B0 = 2.5E5
+    
+    
+    pi_c_apm = 7.43773673e-01 #4.52515051e-01#8.621433896994662449e-01 #x[1]#0.000015#  #ajuste
+    pi_c_i = 1.97895565e-02#1.96382616e-03#5.619826917967409713e-02#x[2]#0.015#ajuste
     pi_c_tke = 0.04730172#1.60504089e-02#4.24581665e-03#3.69333590e-03#2.529626114457017745e-03#x[3]#0.000015 #ajuste
-    delta_c = 9.94728039e+00#3.307713482905626279e+00#x[4]#0.1#ajuste
+    delta_c = 8.26307952e+00#9.94728039e+00#3.307713482905626279e+00#x[4]#0.1#ajuste
     k_apm = x[0]#x[5]#0.000007 #ajuste
-    k_v3 = 3.25225701e-03#2.282353546986449176e-03#x[6]#1.0e-6#ajuste
-    k_tk = x[1] 
-       
+    k_v3 = 3.08059068e-03#3.25225701e-03#2.282353546986449176e-03#x[6]#1.0e-6#ajuste
+    k_tk = x[1]    
  
        
-    
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
     delta_Apm, alpha_Tn, pi_T, k_te1, delta_te, alpha_B, pi_B1, pi_B2, 
     beta_S, beta_L, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
@@ -216,8 +259,8 @@ def model(x):
     if (math.isnan(erro_il6) or math.isinf(erro_il6)):
         erro_il6 = 1e12    
     
-    weight = 0.5
-    erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6*2
+    weight = 1
+    erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
     '''
     print("RELATIVE ERROR")
     print("Erro viremia: ", erro_V)
@@ -264,10 +307,10 @@ if __name__ == "__main__":
         print ('...')
         print(result.x)
         #saving the best offspring...
-        np.savetxt('params_simple_stormv2.txt',result.x)
+        np.savetxt('params_simple_stormv4.txt',result.x)
         best=result.x
     else:
-        best = np.loadtxt('params_simple_stormv2.txt')
+        best = np.loadtxt('params_simple_stormv4.txt')
     
     #saving the samples for UQ
     #np.savetxt('execution_de_100_ge.txt',execution_de)

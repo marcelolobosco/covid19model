@@ -107,6 +107,7 @@ def model(x):
     5.06889922e-00, 2.17E-04, 1.0E-04, 1.0E-08, 0.22,1.0e6, 1.0e6, 5.0e5, 2.5E5,0.000015,0.015,0.000015,0.1,0.000007,1.0e-6)
     '''
     
+    '''
     pi_v = 1.091710061112672880e-01#x[0] #ajuste
     c_v1 = 2.63
     c_v2 = 0.60
@@ -146,6 +147,49 @@ def model(x):
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
+    '''
+    
+    pi_v = 0.1955#1.091710061112672880e-01
+    c_v1 = 2.63
+    c_v2 = 0.60
+    k_v1 = 3.5e-3#5.600298025616778555e-05
+    k_v2 = 9.5e-5#6.011588247777179580e-05
+    alpha_Ap = 1.87E-06*0.4
+    beta_Ap = 2.00E-03
+    k_ap1 = 0.8  
+    k_ap2 = 40.0
+
+    delta_Apm = 8.14910996e+00 
+    alpha_Tn =2.17E-04 
+    pi_T = 1.431849023090428446e-05
+    k_te1 = 1.0E-08 
+    delta_te = 0.0003
+    alpha_B = 3.578236584371140339e+02
+    pi_B1 = 8.979145365768647095e-05
+    pi_B2 = 1.27E-8
+
+    beta_S = 6.0e-6#0.000672 
+    beta_L = 5.0e-6#5.61E-06 
+    beta_Bm = 1.0E-06
+    delta_S = 2.5
+    delta_L = 0.35
+    gamma_M = (1.95E-06)*500.0
+    k_bm1 = 1.0e-5      
+    k_bm2 = 2500.0 
+    pi_AS = 0.087#2.850370072424884479e-02
+    pi_AL = 0.001#6.304459239904726120e-01
+    delta_A_G = 0.07#3.650482092015642221e-01
+    delta_A_M = 0.07#6.873347140815699419e+00
+    c11 = 2.17E-04
+    c12 = 1.8e-5#1.0E-07
+    c13 = 1.0E-08  
+    c14 = 0.3#0.22
+    Ap0 = 1.0e6
+    Thn0 = 1.0e6
+    Tkn0 = 5.0e5
+    B0 = 2.5E5
+
+    
     pi_c_apm = x[1]#0.000015#  #ajuste
     pi_c_i = x[2]#0.015#ajuste
     pi_c_tke = 0.04730172#x[3]#0.000015 #ajuste
@@ -155,12 +199,80 @@ def model(x):
     k_tk = x[7]
     
     
+    
+    '''
+    #ignorar o anterior e verificar esse
+    
+    V0 = 1.5e0#4.59722506e+00
+    Ap0 = 1.0e6#0.6e6
+    Apm0 = 0.0
+    Ai0=0
+    C0=0.0
+    Thn0 = (1.0e6)#*0.5
+    The0 = 0.0  #### Convertendo de ul para ml
+    Tkn0 = (1.0e3)*500.0#(1.0e3)*500.0
+    Tke0 = 0.0
+    B0 =  (1.0e3)*250.0
+    Ps0 = 0.0
+    Pl0 = 0.0
+    Bm0 = 0.0
+    A0_M = 0.0  
+    A0_G = 0.0
+    P0 = [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G,Ai0,C0]
+
+
+    pi_v = 0.1955#1.091710061112672880e-01
+    c_v1 = 2.63
+    c_v2 = 0.60
+    k_v1 = 3.5e-3#5.600298025616778555e-05
+    k_v2 = 9.5e-5#6.011588247777179580e-05
+    alpha_Ap = 1.87E-06*0.4
+    beta_Ap = 2.00E-03
+    k_ap1 = 0.8  
+    k_ap2 = 40.0
+
+    delta_Apm = 8.14910996e+00 
+    alpha_Tn =2.17E-04 
+    pi_T = 1.431849023090428446e-05
+    k_te1 = 1.0E-08 
+    delta_te = 0.0003
+    alpha_B = 3.578236584371140339e+02
+    pi_B1 = 8.979145365768647095e-05
+    pi_B2 = 1.27E-8
+
+    beta_S = 6.0e-6#0.000672 
+    beta_L = 5.0e-6#5.61E-06 
+    beta_Bm = 1.0E-06
+    delta_S = 2.5
+    delta_L = 0.35
+    gamma_M = (1.95E-06)*500.0
+    k_bm1 = 1.0e-5      
+    k_bm2 = 2500.0 
+    pi_AS = 0.087#2.850370072424884479e-02
+    pi_AL = 0.001#6.304459239904726120e-01
+    delta_A_G = 0.07#3.650482092015642221e-01
+    delta_A_M = 0.07#6.873347140815699419e+00
+    c11 = 2.17E-04
+    c12 = 1.8e-5#1.0E-07
+    c13 = 1.0E-08  
+    c14 = 0.3#0.22
+    Ap0 = 1.0e6
+    Thn0 = 1.0e6
+    Tkn0 = 5.0e5
+    B0 = 2.5E5
+    pi_c_apm = 4.52515051e-01
+    pi_c_i = 1.96382616e-03
+    pi_c_tke = 0.04730172
+    delta_c = 9.94728039e+00
+    k_apm = 1.51576968e-01 
+    k_v3 = 2.5e-4#3.25225701e-03
+    k_tk = 1.80727212e-01    
+    '''
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
     delta_Apm, alpha_Tn, pi_T, k_te1, delta_te, alpha_B, pi_B1, pi_B2, 
     beta_S, beta_L, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
     pi_AL, delta_A_G, delta_A_M, c11, c12, c13, c14, Ap0, Thn0, Tkn0, B0,  
-    pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3, k_tk)      
-    
+    pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3, k_tk)  
     
     Ps= odeint(immune_response_v3, P0, ts, args=(model_args)) 
 
@@ -255,10 +367,10 @@ if __name__ == "__main__":
         print ('...')
         print(result.x)
         #saving the best offspring...
-        np.savetxt('params_simple_cytokinev3.txt',result.x)
+        np.savetxt('params_simple_cytokinev4.txt',result.x)
         best=result.x
     else:
-        best = np.loadtxt('params_simple_cytokinev3.txt')
+        best = np.loadtxt('params_simple_cytokinev5.txt')
     
     #saving the samples for UQ
     #np.savetxt('execution_de_100_ge.txt',execution_de)
