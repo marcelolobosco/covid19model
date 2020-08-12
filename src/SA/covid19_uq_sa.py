@@ -23,9 +23,9 @@ from uqtools import *
 from NovoModelo import *
 
 #sobol
-#from SALib.sample import saltelli
-#from SALib.analyze import sobol
-#from SALib.test_functions import Ishigami
+from SALib.sample import saltelli
+from SALib.analyze import sobol
+from SALib.test_functions import Ishigami
 
 
 
@@ -94,49 +94,49 @@ def eval_model(x):
     c_v2 = x[2]#0.60
     k_v1 = x[3]#3.5e-3
     k_v2 = x[4]#9.5e-5
-    alpha_Ap = x[5]#1.87E-06*0.4
-    beta_Ap = x[6]#2.00E-03
-    c_ap1 = x[7] 
-    c_ap2 = x[8]
+    alpha_Ap = 1.87E-06*0.4 #remover
+    beta_Ap = x[5]#2.00E-03
+    c_ap1 = x[6] 
+    c_ap2 = x[7]
 
-    delta_Apm = 8.14910996e+00 
-    alpha_Tn =2.17E-04 
-    beta_tk = 1.431849023090428446e-05
-    pi_tk = 1.0E-08 
-    delta_tk = 0.0003
-    alpha_B = 3.578236584371140339e+02
-    pi_B1 = 8.979145365768647095e-05
-    pi_B2 = 1.27E-8
+    delta_Apm = x[8]#8.14910996e+00 
+    alpha_Tn = 2.17E-04 #=>remover
+    beta_tk = x[9]#1.431849023090428446e-05
+    pi_tk = x[10]#1.0E-08 
+    delta_tk = x[11]#0.0003
+    alpha_B = x[12]#3.578236584371140339e+02
+    pi_B1 = x[13]#8.979145365768647095e-05
+    pi_B2 = x[14]#1.27E-8
 
-    beta_ps = 6.0e-6
-    beta_pl = 5.0e-6
-    beta_Bm = 1.0E-06
-    delta_S = 2.5
-    delta_L = 0.35
-    gamma_M = (1.95E-06)*500.0
-    k_bm1 = 1.0e-5      
-    k_bm2 = 2500.0 
-    pi_AS = 0.087
-    pi_AL = 0.001
-    delta_ag = 0.07
-    delta_am = 0.07
-    alpha_th = 2.17E-04
-    beta_th = 1.8e-5#1.0E-07
-    pi_th = 1.0E-08  
-    delta_th = 0.3
-    Ap0 = 1.0e6
-    Thn0 = 1.0e6
-    Tkn0 = 5.0e5
-    B0 = 2.5E5
+    beta_ps = x[15]#6.0e-6
+    beta_pl = x[16]#5.0e-6
+    beta_Bm = x[17]#1.0E-06
+    delta_S = x[18]#2.5
+    delta_L = x[19]#0.35
+    gamma_M = x[20]#(1.95E-06)*500.0
+    k_bm1 = x[21]#1.0e-5      
+    k_bm2 = x[22]#2500.0 
+    pi_AS = x[23]#0.087
+    pi_AL = x[24]#0.001
+    delta_ag = x[25]#0.07
+    delta_am = x[26]#0.07
+    alpha_th = x[27]#2.17E-04
+    beta_th = x[28]#1.8e-5#1.0E-07
+    pi_th = x[29]#1.0E-08  
+    delta_th = x[30]#0.3
+    Ap0 = x[31]#1.0e6
+    Thn0 = x[32]#1.0e6
+    Tkn0 = x[33]#5.0e5
+    B0 = x[34]#2.5E5
 
 
-    pi_c_apm = 7.43773673e-01
-    pi_c_i = 1.97895565e-02
-    pi_c_tke = 0.04730172
-    delta_c = 8.26307952e+00
-    beta_apm = 5.36139617e-01
-    k_v3 = 3.08059068e-03
-    beta_tke = 2.10152618e-01
+    pi_c_apm = x[35]#7.43773673e-01
+    pi_c_i = x[36]#1.97895565e-02
+    pi_c_tke = x[37]#0.04730172
+    delta_c = x[38]#8.26307952e+00
+    beta_apm = x[39]#5.36139617e-01
+    k_v3 = x[40]#3.08059068e-03
+    beta_tke = x[41]#2.10152618e-01
     
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, c_ap1, c_ap2,
     delta_Apm, alpha_Tn, beta_tk, pi_tk, delta_tk, alpha_B, pi_B1, pi_B2, 
@@ -147,7 +147,7 @@ def eval_model(x):
 	
 
     #resolve o modelo
-    y,d=integrate.odeint(immune_response_v3, P0, t, args=(model_args), full_output=1, printmessg=True)
+    y=integrate.odeint(immune_response_v3, P0, t, args=(model_args))
 
     #ordem de retorno 
     #V,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, C = y[:,0], y[:,1], y[:,2], y[:,3], y[:,4], y[:,5], y[:,6], y[:,7], y[:,8], y[:,9], y[:,10], y[:,11], y[:,12], y[:,13], y[:,14]
@@ -183,11 +183,13 @@ if __name__ == "__main__":
     
     
     
-    opt_sobol = True
+    
     opt_uq = False
     opt_loocv = False
-    opt_save_evals = False
+    opt_save_evals = True
     
+    opt_sobol_salib = True
+    opt_sobol_pce = False
 
 
     
@@ -245,162 +247,189 @@ if __name__ == "__main__":
     k_v3 = 3.08059068e-03
     beta_tke = 2.10152618e-01
     
-    label_param = ("pi_v", "c_v1", "c_v2", "k_v1", "k_v2", "alpha_Ap", "beta_Ap", "c_ap1", "c_ap2")
+    label_param = ("pi_v", "c_v1", "c_v2", "k_v1", "k_v2", 
+        "beta_Ap", "c_ap1", "c_ap2", "delta_Apm", "beta_tk",
+        "pi_tk", "delta_tk", "alpha_B","pi_B1", "pi_B2", 
+        "beta_ps", "beta_pl", "beta_Bm","delta_S", "delta_L", "gamma_M", "k_bm1", "k_bm2", "pi_AS",
+        "pi_AL", "delta_ag", "delta_am", "alpha_th", "beta_th", "pi_th", "delta_th", "Ap0", "Thn0", "Tkn0", "B0",  
+        "pi_c_apm", "pi_c_i","pi_c_tke","delta_c", "beta_apm", "k_v3", "beta_tke")
     
     
-    min_bound = 0.9
-    max_bound = 1.1
-    
-    
-    pdf_pi_v = cp.Uniform(pi_v*min_bound,pi_v*max_bound)
-    pdf_c_v1 = cp.Uniform(c_v1*min_bound,c_v1*max_bound)
-    pdf_c_v2 = cp.Uniform(c_v2*min_bound,c_v2*max_bound)
-    pdf_k_v1 = cp.Uniform(k_v1*min_bound,k_v1*max_bound)
-    pdf_k_v2 = cp.Uniform(k_v2*min_bound,k_v2*max_bound) 
-    pdf_alpha_Ap = cp.Uniform(alpha_Ap*min_bound,alpha_Ap*max_bound) 
-    pdf_beta_Ap = cp.Uniform(beta_Ap*min_bound,beta_Ap*max_bound) 
-    pdf_c_ap1 = cp.Uniform(c_ap1*min_bound,c_ap1*max_bound) 
-    pdf_c_ap2 = cp.Uniform(c_ap2*min_bound,c_ap2*max_bound) 
-    
-    dist = cp.J(pdf_pi_v, pdf_c_v1,pdf_c_v2, pdf_k_v1,pdf_k_v2,pdf_alpha_Ap, pdf_beta_Ap, pdf_c_ap1, pdf_c_ap2)
-    
-    #---------------------------------MATRIZ COVARIANCIA, DISTRIBUICAO-----------------------------------------------
+    if opt_uq:
+        min_bound = 0.9
+        max_bound = 1.1
+        
+        
+        model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, beta_Ap, c_ap1, c_ap2,
+        delta_Apm, beta_tk, pi_tk, delta_tk, alpha_B, pi_B1, pi_B2, 
+        beta_ps, beta_pl, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
+        pi_AL, delta_ag, delta_am, alpha_th, beta_th, pi_th, delta_th, Ap0, Thn0, Tkn0, B0,  
+        pi_c_apm, pi_c_i,pi_c_tke,delta_c, beta_apm, k_v3, beta_tke)
+        
+        for i in range(len(model_args)):
+            vpdf = cp.Uniform(model_args[i]*min_bound,model_args[i]*max_bound)
+            if i==0:
+                dist = cp.J(vpdf)
+            else:
+                dist = cp.J(dist, vpdf)
+        
+        '''
+        pdf_pi_v = cp.Uniform(pi_v*min_bound,pi_v*max_bound)
+        pdf_c_v1 = cp.Uniform(c_v1*min_bound,c_v1*max_bound)
+        pdf_c_v2 = cp.Uniform(c_v2*min_bound,c_v2*max_bound)
+        pdf_k_v1 = cp.Uniform(k_v1*min_bound,k_v1*max_bound)
+        pdf_k_v2 = cp.Uniform(k_v2*min_bound,k_v2*max_bound) 
+        pdf_alpha_Ap = cp.Uniform(alpha_Ap*min_bound,alpha_Ap*max_bound) 
+        pdf_beta_Ap = cp.Uniform(beta_Ap*min_bound,beta_Ap*max_bound) 
+        pdf_c_ap1 = cp.Uniform(c_ap1*min_bound,c_ap1*max_bound) 
+        pdf_c_ap2 = cp.Uniform(c_ap2*min_bound,c_ap2*max_bound) 
+        pdf_delta_Apm = cp.Uniform(delta_Apm*min_bound,delta_Apm*max_bound)
+        pdf_alpha_Tn = cp.Uniform(alpha_Tn*min_bound,alpha_Tn*max_bound)
+        pdf_beta_tk = cp.Uniform(beta_tk*min_bound,beta_tk*max_bound)
+        pdf_pi_tk = cp.Uniform(pi_tk*min_bound,pi_tk*max_bound)
+        pdf_delta_tk = cp.Uniform(delta_tk*min_bound,delta_tk*max_bound)
+        pdf_alpha_B = cp.Uniform(alpha_B*min_bound,alpha_B*max_bound)
+        
+        dist = cp.J(pdf_pi_v, pdf_c_v1,pdf_c_v2, pdf_k_v1,pdf_k_v2,pdf_alpha_Ap, 
+            pdf_beta_Ap, pdf_c_ap1, pdf_c_ap2, pdf_delta_Apm, pdf_alpha_Tn,
+            pdf_beta_tk, pdf_pi_tk, pdf_delta_tk)
+        dist = cp.J(dist, pdf_alpha_B)
+        '''
+        #---------------------------------MATRIZ COVARIANCIA, DISTRIBUICAO-----------------------------------------------
 
-    '''m = np.loadtxt(arqpar, comments='#');
+        '''m = np.loadtxt(arqpar, comments='#');
 
-    Cov_matrix = np.cov(m[:, 3:13].T)
-    mean_vector = np.mean(m[:,3:13], axis=0)
-    std_vector = np.std(m[:,3:13], axis=0)
-    print("mean = ", mean_vector)
-    print("std = ", std_vector)
-
-    
-    dist = cp.MvNormal(mean_vector, Cov_matrix)'''
-
-   
-   
-    
-    npar = len(dist)
-
-    #grau da aproximacao polinomial
-    degpc = 2
-    ns = 3*P(degpc,npar)
-    print("number of input parameters %d" % npar)
-    print("polynomial degree %d" % degpc)
-    print("min number of samples %d" % ns)
-
-    # create samples and evaluate them
-    #samples = distribution.sample(ns,"L")
-    #-----------------------------------------------------------------------------------------------------------------------#
-
-    #----------------------------------------------------EVALS--------------------------------------------------------------#
-    evals_virus = []
-    evals_Ap = []
-    evals_Apm = []
-    evals_Thn = []
-    evals_The = []
-    evals_Tkn = []
-    evals_Tke = []
-    evals_B = []
-    evals_Ps = []
-    evals_Pl = []
-    evals_Bm = []
-    evals_AM = []
-    evals_AG= []
-    evals_I = []
-    evals_C = []
-    
-    samples = dist.sample(ns,"L")
-    k = 0
-    lpts = range(ns)
-    samp = samples.T
-    print("evaluating samples: ")
-    for i in tqdm(lpts,bar_format='{l_bar}{bar:20}{r_bar}{bar:-20b}'):
-    #for s in samples.T:
-        s = samp[k]
-        k = k+1
-        virus,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = eval_model(s)
-        evals_virus.append(virus)
-        evals_Ap.append(Ap) 
-        evals_Apm.append(Apm) 
-        evals_Thn.append(Thn)
-        evals_The.append(The) 
-        evals_Tkn.append(Tkn) 
-        evals_Tke.append(Tke)
-        evals_B.append(B)
-        evals_Ps.append(Ps)
-        evals_Pl.append(Pl) 
-        evals_Bm.append(Bm) 
-        evals_AM.append(A_M) 
-        evals_AG.append(A_G)
-        evals_I.append(I) 
-        evals_C.append(C)
-    #-----------------------------------------------------------------------------------------------------------------------#  
-    
-    evals_virus = np.array(evals_virus)
-    evals_Ap =  np.array( evals_Ap)
-    evals_Apm = np.array(evals_Apm)
-    evals_Thn = np.array(evals_Thn)
-    evals_The = np.array(evals_The)
-    evals_Tkn = np.array(evals_Tkn)
-    evals_Tke = np.array(evals_Tke)
-    evals_B =  np.array(evals_B)
-    evals_Ps =  np.array(evals_Ps)
-    evals_Pl =  np.array(evals_Pl)
-    evals_Bm =  np.array(evals_Bm)
-    evals_AM =  np.array(evals_AM)
-    evals_AG= np.array(evals_AG)
-    evals_I =  np.array(evals_I)
-    evals_C =  np.array(evals_C)
-    
-    
-    #Chaos Poly
-    
-    # create pce
-    pce = cp.orth_ttr(degpc, dist)
-    # compute surrogate models (sm_)
-    sm_virus  = cp.fit_regression(pce, samples, evals_virus)
-    sm_c  = cp.fit_regression(pce, samples, evals_C)
-    sm_am  = cp.fit_regression(pce, samples, evals_AM)
-    sm_ag  = cp.fit_regression(pce, samples, evals_AG)
+        Cov_matrix = np.cov(m[:, 3:13].T)
+        mean_vector = np.mean(m[:,3:13], axis=0)
+        std_vector = np.std(m[:,3:13], axis=0)
+        print("mean = ", mean_vector)
+        print("std = ", std_vector)
 
         
-    #-----------------------------------------------------------------------------------------------------------------------# 
-    #
-    # Plot data
-    #
-    plt.style.use('../estilo/PlotStyle.mplstyle')
-    plt.close('all')
+        dist = cp.MvNormal(mean_vector, Cov_matrix)'''
 
-    output_path = './output_monte_carlo/'
-    ext = '.png'
-    itvl = 6
-    caso = 'caso.'
-    
+       
+       
+        
+        npar = len(dist)
 
-    
-    
-    #saving the evals
-    if opt_save_evals:
-        np.savetxt(output_path+caso+'_evals_virus.txt',evals_virus)
-        np.savetxt(output_path+caso+'_evals_Ap.txt',evals_Ap)
-        np.savetxt(output_path+caso+'_evals_Apm.txt',evals_Apm)
-        np.savetxt(output_path+caso+'_evals_Thn.txt',evals_Thn)
-        np.savetxt(output_path+caso+'_evals_The.txt',evals_The)
-        np.savetxt(output_path+caso+'_evals_Tkn.txt',evals_Tkn)
-        np.savetxt(output_path+caso+'_evals_Tke.txt',evals_Tke)
-        np.savetxt(output_path+caso+'_evals_B.txt',evals_B)
-        np.savetxt(output_path+caso+'_evals_Ps.txt',evals_Ps)
-        np.savetxt(output_path+caso+'_evals_Pl.txt',evals_Pl)
-        np.savetxt(output_path+caso+'_evals_Bm.txt',evals_Bm)
-        np.savetxt(output_path+caso+'_evals_AM.txt',evals_AM)
-        np.savetxt(output_path+caso+'_evals_AG.txt',evals_AG)
-        np.savetxt(output_path+caso+'_evals_I.txt',evals_I)
-        np.savetxt(output_path+caso+'_evals_C.txt',evals_C)
+        #grau da aproximacao polinomial
+        degpc = 2
+        ns = 10000#3*P(degpc,npar)
+        print("number of input parameters %d" % npar)
+        print("polynomial degree %d" % degpc)
+        print("min number of samples %d" % ns)
+
+        # create samples and evaluate them
+        #samples = distribution.sample(ns,"L")
+        #-----------------------------------------------------------------------------------------------------------------------#
+
+        #----------------------------------------------------EVALS--------------------------------------------------------------#
+        evals_virus = []
+        evals_Ap = []
+        evals_Apm = []
+        evals_Thn = []
+        evals_The = []
+        evals_Tkn = []
+        evals_Tke = []
+        evals_B = []
+        evals_Ps = []
+        evals_Pl = []
+        evals_Bm = []
+        evals_AM = []
+        evals_AG= []
+        evals_I = []
+        evals_C = []
+        
+        samples = dist.sample(ns,"L")
+        k = 0
+        lpts = range(ns)
+        samp = samples.T
+        print("evaluating samples: ")
+        for i in tqdm(lpts,bar_format='{l_bar}{bar:20}{r_bar}{bar:-20b}'):
+        #for s in samples.T:
+            s = samp[k]
+            k = k+1
+            virus,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = eval_model(s)
+            evals_virus.append(virus)
+            evals_Ap.append(Ap) 
+            evals_Apm.append(Apm) 
+            evals_Thn.append(Thn)
+            evals_The.append(The) 
+            evals_Tkn.append(Tkn) 
+            evals_Tke.append(Tke)
+            evals_B.append(B)
+            evals_Ps.append(Ps)
+            evals_Pl.append(Pl) 
+            evals_Bm.append(Bm) 
+            evals_AM.append(A_M) 
+            evals_AG.append(A_G)
+            evals_I.append(I) 
+            evals_C.append(C)
+        #-----------------------------------------------------------------------------------------------------------------------#  
+        
+        evals_virus = np.array(evals_virus)
+        evals_Ap =  np.array( evals_Ap)
+        evals_Apm = np.array(evals_Apm)
+        evals_Thn = np.array(evals_Thn)
+        evals_The = np.array(evals_The)
+        evals_Tkn = np.array(evals_Tkn)
+        evals_Tke = np.array(evals_Tke)
+        evals_B =  np.array(evals_B)
+        evals_Ps =  np.array(evals_Ps)
+        evals_Pl =  np.array(evals_Pl)
+        evals_Bm =  np.array(evals_Bm)
+        evals_AM =  np.array(evals_AM)
+        evals_AG= np.array(evals_AG)
+        evals_I =  np.array(evals_I)
+        evals_C =  np.array(evals_C)
+        
+        '''
+        #Chaos Poly
+        
+        # create pce
+        pce = cp.orth_ttr(degpc, dist)
+        # compute surrogate models (sm_)
+        sm_virus  = cp.fit_regression(pce, samples, evals_virus)
+        sm_c  = cp.fit_regression(pce, samples, evals_C)
+        sm_am  = cp.fit_regression(pce, samples, evals_AM)
+        sm_ag  = cp.fit_regression(pce, samples, evals_AG)
+        '''
+            
+        #-----------------------------------------------------------------------------------------------------------------------# 
+        #
+        # Plot data
+        #
+        plt.style.use('../estilo/PlotStyle.mplstyle')
+        plt.close('all')
+
+        output_path = './output_monte_carlo/'
+        ext = '.png'
+        itvl = 6
+        caso = 'caso.'
+        
+
+        
+        
+        #saving the evals
+        if opt_save_evals:
+            np.savetxt(output_path+caso+'_evals_virus.txt',evals_virus)
+            np.savetxt(output_path+caso+'_evals_Ap.txt',evals_Ap)
+            np.savetxt(output_path+caso+'_evals_Apm.txt',evals_Apm)
+            np.savetxt(output_path+caso+'_evals_Thn.txt',evals_Thn)
+            np.savetxt(output_path+caso+'_evals_The.txt',evals_The)
+            np.savetxt(output_path+caso+'_evals_Tkn.txt',evals_Tkn)
+            np.savetxt(output_path+caso+'_evals_Tke.txt',evals_Tke)
+            np.savetxt(output_path+caso+'_evals_B.txt',evals_B)
+            np.savetxt(output_path+caso+'_evals_Ps.txt',evals_Ps)
+            np.savetxt(output_path+caso+'_evals_Pl.txt',evals_Pl)
+            np.savetxt(output_path+caso+'_evals_Bm.txt',evals_Bm)
+            np.savetxt(output_path+caso+'_evals_AM.txt',evals_AM)
+            np.savetxt(output_path+caso+'_evals_AG.txt',evals_AG)
+            np.savetxt(output_path+caso+'_evals_I.txt',evals_I)
+            np.savetxt(output_path+caso+'_evals_C.txt',evals_C)
 
 
-   
-    if opt_uq:
         #mean_virus= plot_confidence_interval(plt, t, evals_virus, 'red', 'Modelo: Virus')
         plt.figure('Viremia')
         #dadosViremiaLog10.plot.scatter(x='Day',y='Viral_load',color='m',label='Dados experimentais')
@@ -660,32 +689,146 @@ if __name__ == "__main__":
     # Sensitivity analysis
 
     #-------------------------------------------SOBOL---------------------------------------------#
-    if(opt_sobol):
+    if(opt_sobol_pce):
         fig, ax = plt.subplots(2, 2)
         
         plt.figure();
         plt.title("V")
         plot_sensitivity(plt, t, sm_virus, dist, label_param)
-        plt.legend(loc=(1.04,0))
+        plt.legend(loc=(1.04,0),prop={'size': 6})
         plt.savefig('output_sens_virus.pdf')
         
         plt.figure();
         plt.title("C")
         plot_sensitivity(plt, t, sm_c, dist, label_param)
-        plt.legend(loc=(1.04,0))
+        plt.legend(loc=(1.04,0),prop={'size': 6})
         plt.savefig('output_sens_c.pdf')
         
         plt.figure();
         plt.title("IgG")
         plot_sensitivity(plt, t, sm_ag, dist, label_param)
-        plt.legend(loc=(1.04,0))
+        plt.legend(loc=(1.04,0), prop={'size': 6})
         plt.savefig('output_sens_igg.pdf')
         
         plt.figure();
         plt.title("IgM")
         plot_sensitivity(plt, t, sm_am, dist, label_param)
-        plt.legend(loc=(1.04,0))
+        plt.legend(loc=(1.04,0), prop={'size': 6})
         plt.savefig('output_sens_igm.pdf')
+    
+    if(opt_sobol_salib):
+        min_bound = 0.9
+        max_bound = 1.1
+    
+        model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, beta_Ap, c_ap1, c_ap2,
+            delta_Apm, beta_tk, pi_tk, delta_tk, alpha_B, pi_B1, pi_B2, 
+            beta_ps, beta_pl, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
+            pi_AL, delta_ag, delta_am, alpha_th, beta_th, pi_th, delta_th, Ap0, Thn0, Tkn0, B0,  
+            pi_c_apm, pi_c_i,pi_c_tke,delta_c, beta_apm, k_v3, beta_tke)
+        vbounds = []
+        for i in range(len(model_args)):
+            vbounds.append([model_args[i]*min_bound, model_args[i]*max_bound])
+        
+        # Define the model inputs
+        problem = {
+            'num_vars': 42,
+            'names': ['pi_v', 'c_v1', 'c_v2', 'k_v1', 'k_v2', 'beta_Ap', 'c_ap1', 'c_ap2', 
+                'delta_Apm', 'beta_tk','pi_tk', 'delta_tk', 'alpha_B','pi_B1', 'pi_B2', 
+                'beta_ps', 'beta_pl', 'beta_Bm','delta_S', 'delta_L', 'gamma_M', 'k_bm1',
+                'k_bm2', 'pi_AS', 'pi_AL', 'delta_ag', 'delta_am', 'alpha_th', 'beta_th', 
+                'pi_th', 'delta_th', 'Ap0', 'Thn0', 'Tkn0', 'B0',  'pi_c_apm', 'pi_c_i',
+                'pi_c_tke','delta_c', 'beta_apm', 'k_v3', 'beta_tke'],
+            'bounds': vbounds
+        }
+
+        # Generate samples
+        nsobol = 10000
+        param_values = saltelli.sample(problem, nsobol, calc_second_order=False)
+
+        # Run model (example)
+        #Y = Ishigami.evaluate(param_values)
+        k = 0
+        nexec = np.shape(param_values)[0]
+        #print("SHAPE ", np.shape(param_values)[0] , np.shape(param_values)[1] )
+        lpts = range( nexec )
+        sm_v = []
+        sm_ag = []
+        sm_am = []
+        sm_c = []
+        print("evaluating samples for SA: ")
+        for i in tqdm(lpts,bar_format='{l_bar}{bar:20}{r_bar}{bar:-20b}'):
+        #for s in samples.T:
+            s = param_values[k,:] #samp[k]
+            s = np.array(s)
+            k = k+1
+            virus,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = eval_model(s)
+            sm_v.append(virus) # s
+            sm_ag.append(A_G) # i --- TO-DO conf soh para o Brazil
+            sm_am.append(A_M) # r
+            sm_c.append(C) # m
+        
+        sm_v = np.array(sm_v)
+        sm_ag = np.array(sm_ag)
+        sm_am = np.array(sm_am)
+        sm_c = np.array(sm_c)
+
+        #print( "SHAPE SM_S", np.shape(sm_s) )
+        #Y = Ishigami.evaluate(param_values)
+        nsteps = np.shape(sm_v)[1]
+        Si_v = np.zeros((nsteps,42))
+        Si_ag = np.zeros((nsteps,42))
+        Si_am = np.zeros((nsteps,42))
+        Si_c = np.zeros((nsteps,42))
+
+        # Perform analysis
+        for i in range(nsteps):
+            sob_v = sobol.analyze(problem, sm_v[:,i], calc_second_order=False, print_to_console=False)
+            sob_ag = sobol.analyze(problem, sm_ag[:,i], calc_second_order=False, print_to_console=False)
+            sob_am = sobol.analyze(problem, sm_am[:,i], calc_second_order=False, print_to_console=False)
+            sob_c = sobol.analyze(problem, sm_c[:,i], calc_second_order=False, print_to_console=False)
+
+            Si_v[i,:] = sob_v['S1']
+            Si_ag[i,:] = sob_ag['S1']
+            Si_am[i,:] = sob_am['S1']
+            Si_c[i,:] = sob_c['S1']
+
+        print("salvando arquivos Sobol")
+        if(opt_save_evals):
+            np.savetxt('sobol_v.txt',Si_v)
+            np.savetxt('sobol_ag.txt',Si_ag)
+            np.savetxt('sobol_am.txt',Si_am)
+            np.savetxt('sobol_c.txt',Si_c)
+        
+        plt.figure();
+        plt.title("V")
+        plot_sensitivity_mc(plt, t, Si_v.T, label_param)
+        plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
+        plt.tight_layout()
+        plt.savefig('output_sens_virus.pdf')
+        
+        plt.figure();
+        plt.title("IgG")
+        plot_sensitivity_mc(plt, t, Si_ag.T, label_param)
+        plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
+        plt.tight_layout()
+        plt.savefig('output_sens_igg.pdf')
+        
+        plt.figure();
+        plt.title("IgM")
+        plot_sensitivity_mc(plt, t, Si_am.T, label_param)
+        plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
+        plt.tight_layout()
+        plt.savefig('output_sens_igm.pdf')
+        
+        plt.figure();
+        plt.title("C")
+        plot_sensitivity_mc(plt, t, Si_c.T, label_param)
+        plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
+        plt.tight_layout()
+        plt.savefig('output_sens_c.pdf')
+
+
+
 
 
 

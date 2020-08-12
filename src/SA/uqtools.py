@@ -1,6 +1,10 @@
 import numpy as np
 import chaospy as cp
 from math import factorial as fat
+# barra de progresso =)
+# sudo pip install tqdm
+from tqdm import tqdm
+from tqdm import tqdm_gui
 
 def P(order,degree):
     return int((fat(degree+order)/(fat(degree)*fat(order))))
@@ -67,18 +71,46 @@ def plot_sensitivity(ax, time, poly, dist, label_param):
     """
     Compute and plot Sobol indices
     """
+    print("Computing main sobol index...")
     main_sobol_s = cp.Sens_m(poly, dist)
 
     vcolor = ('red', 'green', 'orange', 'blue', 'yellow',
               'purple', 'cyan', 'brown', 'gray', 'deeppink',
               'firebrick', 'sienna')
+    vline = ('solid', 'dashed', 'dashdot', 'dotted')
     k = 0
+    l = 0
+    
     for sm in main_sobol_s:
-        ax.plot(time, sm, color=vcolor[k], lw=2, label=label_param[k])
-        #ax.plot(t, st, '--', color=vcolor[k], lw=2, label=label_param[k])
+        ax.plot(time, sm, color=vcolor[k%len(vcolor)],ls=vline[l], lw=2, label=label_param[k])
         k +=1
+        if k%len(vcolor)==0:
+            l+=1;
+        
     ax.xlabel('tempo (dias)')
     ax.ylabel('indices Sobol')
+
+def plot_sensitivity_mc(ax, time, main_sobol_s, label_param):
+    """
+    Compute and plot Sobol indices
+    """
+
+    vcolor = ('red', 'green', 'orange', 'blue', 'yellow',
+              'purple', 'cyan', 'brown', 'gray', 'deeppink',
+              'firebrick', 'sienna')
+    vline = ('solid', 'dashed', 'dashdot', 'dotted')
+    k = 0
+    l = 0
+    
+    for sm in main_sobol_s:
+        ax.plot(time, sm, color=vcolor[k%len(vcolor)],ls=vline[l], lw=2, label=label_param[k])
+        k +=1
+        if k%len(vcolor)==0:
+            l+=1;
+        
+    ax.xlabel('tempo (dias)')
+    ax.ylabel('indices Sobol')
+
 
 def plot_mean_std_poly(ax, time, poly, dist, linecolor, textlabel):
     """
