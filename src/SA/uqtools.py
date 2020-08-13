@@ -111,6 +111,39 @@ def plot_sensitivity_mc(ax, time, main_sobol_s, label_param):
     ax.xlabel('tempo (dias)')
     ax.ylabel('indices Sobol')
 
+def plot_highest_sensitivity_mc(ax, time, main_sobol_s, label_param):
+    """
+    Compute and plot Sobol indices
+    """
+
+    vcolor = ('red', 'green', 'orange', 'blue', 'yellow',
+              'purple', 'cyan', 'brown', 'gray', 'deeppink',
+              'firebrick', 'sienna')
+    vline = ('solid', 'dashed', 'dashdot', 'dotted')
+    
+    k = 0
+    l = 0
+    i = 0
+    
+    ms = []
+    
+    for sm in main_sobol_s:
+        ms.append(sum(sm))
+    ms.sort(reverse=True)
+    
+    threshold = ms[9]
+    
+    for sm in main_sobol_s:
+        if sum(sm) >= threshold:
+            ax.plot(time, sm, color=vcolor[k%len(vcolor)],ls=vline[l], lw=2, label=label_param[i])
+            k +=1
+            if k%len(vcolor)==0:
+                l+=1;
+        i+=1
+        
+    ax.xlabel('tempo (dias)')
+    ax.ylabel('indices Sobol')
+
 
 def plot_mean_std_poly(ax, time, poly, dist, linecolor, textlabel):
     """

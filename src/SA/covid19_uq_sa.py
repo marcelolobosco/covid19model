@@ -742,7 +742,7 @@ if __name__ == "__main__":
         }
 
         # Generate samples
-        nsobol = 10000
+        nsobol = 100
         param_values = saltelli.sample(problem, nsobol, calc_second_order=False)
 
         # Run model (example)
@@ -762,10 +762,12 @@ if __name__ == "__main__":
             s = np.array(s)
             k = k+1
             virus,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = eval_model(s)
-            sm_v.append(virus) # s
-            sm_ag.append(A_G) # i --- TO-DO conf soh para o Brazil
-            sm_am.append(A_M) # r
-            sm_c.append(C) # m
+            
+            #ignora 1o passo de tempo porque é a condição inicial e não tem variacia, levando a um NaN
+            sm_v.append(virus[1:]) 
+            sm_ag.append(A_G[1:])  
+            sm_am.append(A_M[1:]) 
+            sm_c.append(C[1:]) 
         
         sm_v = np.array(sm_v)
         sm_ag = np.array(sm_ag)
@@ -794,35 +796,35 @@ if __name__ == "__main__":
 
         print("salvando arquivos Sobol")
         if(opt_save_evals):
-            np.savetxt('sobol_v.txt',Si_v)
-            np.savetxt('sobol_ag.txt',Si_ag)
-            np.savetxt('sobol_am.txt',Si_am)
-            np.savetxt('sobol_c.txt',Si_c)
+            np.savetxt('ouput_sobol_v.txt',Si_v)
+            np.savetxt('ouput_sobol_ag.txt',Si_ag)
+            np.savetxt('ouput_sobol_am.txt',Si_am)
+            np.savetxt('ouput_sobol_c.txt',Si_c)
         
         plt.figure();
         plt.title("V")
-        plot_sensitivity_mc(plt, t, Si_v.T, label_param)
+        plot_sensitivity_mc(plt, t[1:], Si_v.T, label_param)
         plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
         plt.tight_layout()
         plt.savefig('output_sens_virus.pdf')
         
         plt.figure();
         plt.title("IgG")
-        plot_sensitivity_mc(plt, t, Si_ag.T, label_param)
+        plot_sensitivity_mc(plt, t[1:], Si_ag.T, label_param)
         plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
         plt.tight_layout()
         plt.savefig('output_sens_igg.pdf')
         
         plt.figure();
         plt.title("IgM")
-        plot_sensitivity_mc(plt, t, Si_am.T, label_param)
+        plot_sensitivity_mc(plt, t[1:], Si_am.T, label_param)
         plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
         plt.tight_layout()
         plt.savefig('output_sens_igm.pdf')
         
         plt.figure();
         plt.title("C")
-        plot_sensitivity_mc(plt, t, Si_c.T, label_param)
+        plot_sensitivity_mc(plt, t[1:], Si_c.T, label_param)
         plt.legend(loc=(1.04,0),prop={'size': 8}, ncol=2)
         plt.tight_layout()
         plt.savefig('output_sens_c.pdf')
