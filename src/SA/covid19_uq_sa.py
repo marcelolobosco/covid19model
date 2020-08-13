@@ -742,7 +742,7 @@ if __name__ == "__main__":
         }
 
         # Generate samples
-        nsobol = 100
+        nsobol = 10000
         param_values = saltelli.sample(problem, nsobol, calc_second_order=False)
 
         # Run model (example)
