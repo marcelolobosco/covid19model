@@ -131,7 +131,7 @@ def plot_highest_sensitivity_mc(ax, time, main_sobol_s, label_param):
         ms.append(sum(sm))
     ms.sort(reverse=True)
     
-    threshold = ms[9]
+    threshold = ms[11]
     
     for sm in main_sobol_s:
         if sum(sm) >= threshold:
