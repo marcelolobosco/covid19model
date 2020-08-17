@@ -190,7 +190,7 @@ def model(x):
     weight = 0.5
     erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
     
-    if (max(erro_IgG, erro_IgM, erro_V, erro_il6) <= 0.3):
+    if (max(erro_IgG, erro_IgM, erro_V, erro_il6) <= 0.28):
         
         ind = []
         for v in x:
