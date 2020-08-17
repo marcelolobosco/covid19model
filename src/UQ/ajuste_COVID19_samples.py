@@ -286,7 +286,7 @@ if __name__ == "__main__":
 
 
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, vbounds, strategy='best1bin', popsize=20, disp=True)
+        result = differential_evolution(model_adj, vbounds, strategy='best1bin', popsize=100, disp=True)
         print('Params order: ')
         print ('...')
         print(result.x)
