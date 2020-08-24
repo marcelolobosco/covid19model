@@ -1,0 +1,11 @@
+#!/bin/bash
+#$ -pe threaded 1
+#$ -N mythreadjob
+#$ -cwd
+#$ -j y
+#$ -S /bin/bash
+echo "NHOSTS=$NHOSTS, NSLOTS=$NSLOTS"
+
+export LD_LIBRARY_PATH=/share/apps/Python-3.7.0/:$LD_LIBRARY_PATH
+
+time /share/apps/Python-3.7.0/python ajuste_COVID19_samples.py
