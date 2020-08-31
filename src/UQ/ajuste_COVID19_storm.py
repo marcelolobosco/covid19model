@@ -187,10 +187,10 @@ def model(x):
     if (math.isnan(erro_il6) or math.isinf(erro_il6)):
         erro_il6 = 1e12    
     
-    weight = 0.5
+    weight = 1
     erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
     
-    if (max(erro_IgG, erro_IgM, erro_V, erro_il6) <= 0.3):
+    if (max(erro_IgG, erro_IgM, erro_V, erro_il6) <= 0.51):
         
         ind = []
         for v in x:
