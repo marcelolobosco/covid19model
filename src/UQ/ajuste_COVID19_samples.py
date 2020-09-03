@@ -23,6 +23,8 @@ dadosViremiaLog10 = pd.read_csv(path+'Viral_load.csv',',')
 dadosAnticorposLog2 = pd.read_csv(path+'IgG_IgM.csv',',')
 dadosIL6 = pd.read_csv(path+'IL6_ajuste.csv',',')
 
+erro_max = 0.28
+
 #dadosIL6 = pd.read_csv(path+'IL6_storm_ajuste.csv',',')
 
 first_day = 0
@@ -190,7 +192,7 @@ def model(x):
     weight = 0.5
     erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
     
-    if (max(erro_IgG, erro_IgM, erro_V, erro_il6) <= 0.28):
+    if (max(erro_IgG, erro_IgM, erro_V, erro_il6) <= erro_max):
         
         ind = []
         for v in x:
@@ -221,6 +223,12 @@ if __name__ == "__main__":
     #define os bounds para cada um dos parâmetros
 
     opt_de = True
+    opt_storm = True
+    
+    if opt_storm:
+        dadosIL6 = pd.read_csv(path+'IL6_storm_ajuste.csv',',')
+        erro_max = 0.4
+        
     if opt_de:
         #Best fit for all parameters survivor
         
@@ -269,9 +277,15 @@ if __name__ == "__main__":
         pi_c_i = 1.97895565e-02
         pi_c_tke = 0.04730172 #fit
         delta_c = 8.26307952e+00 #fit
-        beta_apm = 5.36139617e-01 #fit
         k_v3 = 3.08059068e-03
-        beta_tke = 2.10152618e-01 #fit
+		
+        if (opt_storm):
+            beta_apm = 1.48569967 #fit
+            beta_tke = 0.10171796#fit
+        else:
+            beta_apm = 5.36139617e-01 #fit
+            beta_tke = 2.10152618e-01 #fit
+        
 
         min_bound = 0.9
         max_bound = 1.1
@@ -286,7 +300,7 @@ if __name__ == "__main__":
 
 
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, vbounds, strategy='best1bin', popsize=100, disp=True)
+        result = differential_evolution(model_adj, vbounds, strategy='best1bin', popsize=10, disp=True)
         print('Params order: ')
         print ('...')
         print(result.x)
@@ -295,7 +309,10 @@ if __name__ == "__main__":
         best=result.x
         
         #saving the samples for UQ
-        np.savetxt('execution_de_survivor.txt',execution_de)
+        if (opt_storm):
+            np.savetxt('execution_de_non_survivor.txt',execution_de)
+        else:    
+            np.savetxt('execution_de_survivor.txt',execution_de)
     else:
         best = np.loadtxt('params_best_sample.txt')
     
