@@ -227,7 +227,8 @@ if __name__ == "__main__":
     
     if opt_storm:
         dadosIL6 = pd.read_csv(path+'IL6_storm_ajuste.csv',',')
-        erro_max = 0.4
+        il6_data = dadosIL6['IL6(pg/mL)']
+        erro_max = 0.3
         
     if opt_de:
         #Best fit for all parameters survivor
@@ -300,7 +301,7 @@ if __name__ == "__main__":
 
 
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, vbounds, strategy='best1bin', popsize=10, disp=True)
+        result = differential_evolution(model_adj, vbounds, strategy='best1bin', popsize=100, disp=True)
         print('Params order: ')
         print ('...')
         print(result.x)
@@ -363,4 +364,5 @@ if __name__ == "__main__":
     ax4.legend()
     ax4.grid()
 
-    plt.show()
+    plt.savefig('output_fit.pdf')
+
