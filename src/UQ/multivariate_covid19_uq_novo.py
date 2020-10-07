@@ -33,6 +33,7 @@ from NovoModelo import *
 
 #from COVID-19_all
     #######   Viremia  log10 copias/ml ##########
+#dadosViremiaLog10 = pd.read_csv('../../data/Viral_load.csv',',')
 dadosViremiaLog10 = pd.read_csv('../../data/Viral_load.csv',',')
 dadosAnticorposLog2 = pd.read_csv('../../data/IgG_IgM_21_1b.csv',',') 
 dadosCitocinaObitos = pd.read_csv('../../data/IL6_non-survivors_19.csv',',')
@@ -40,6 +41,8 @@ dadosCitocinaSobreviventes = pd.read_csv('../../data/IL6_survivors_19.csv',',')
 dadosAnticorposLog2_avg = pd.read_csv('../../data/IgG_IgM.csv',',')
 antibody_g = dadosAnticorposLog2_avg['IgG']
 antibody_m = dadosAnticorposLog2_avg['IgM']
+dadosIL6= pd.read_csv('../../data/IL6_storm_ajuste.csv',',')
+#il6_data = dadosIL6['IL6(pg/mL)']
 
 dadosAnticorposLog2_avg = pd.read_csv('../../data/IgG_IgM.csv',',')
 antibody_g = dadosAnticorposLog2_avg['IgG']
@@ -66,7 +69,7 @@ def plot_confidence_interval_log(ax, time, evals, linecolor, textlabel):
 
 
 
-def eval_model(x, y):
+def eval_model(x):
  
 
 	#CONDICOES INICIAIS FROM COVID-19_ALL
@@ -92,6 +95,8 @@ def eval_model(x, y):
 
 	######################PARAMETROS DO MODELO######################################
     #os que estao com fit sao os parametros avaliados na UQ
+    #z eh o vetor que armaneza os non-survivors
+    #x eh os survivors
     
     pi_v = x[0] #fit
     c_v1 = 2.63
@@ -138,18 +143,19 @@ def eval_model(x, y):
     pi_c_i = 1.97895565e-02
     pi_c_tke = x[14] #fit
     delta_c = x[15] #fit
-    k_apm = y[16] #fit
+    beta_apm = x[16] #fit
     k_v3 = 3.08059068e-03 
-    k_tk = y[17] #fit
+    beta_tke = x[17] #fit
     
+ 
     #Morto
     '''
-    k_apm = 1.48569967 
-    k_tk = 0.10171796
+    beta_apm = 1.48569967 
+    beta_tk = 0.10171796
     
     #vivo 
-    k_apm = x[16] #fit
-    k_tk = x[17] #fit
+    beta_apm = x[16] #fit
+    beta_tk = x[17] #fit
     
     '''
 
@@ -158,7 +164,7 @@ def eval_model(x, y):
     delta_Apm, alpha_Tn, beta_tk, pi_tk, delta_tk, alpha_B, pi_B1, pi_B2, 
     beta_ps, beta_pl, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
     pi_AL, delta_ag, delta_am, alpha_th, beta_th, pi_th, delta_th, Ap0, Thn0, Tkn0, B0,  
-    pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3, k_tk)
+    pi_c_apm, pi_c_i,pi_c_tke,delta_c, beta_apm, k_v3, beta_tke)
 
 	#------------------------------------------------------------------------------------------------------------------#
     
@@ -186,11 +192,14 @@ if __name__ == "__main__":
     itvl = 6
     caso = 'caso.'
 
+    #arqpar = "./cluster/execution_de_non_survivor.txt"
+    #para executar os vivos
     arqpar = "./cluster/execution_de_survivor.txt"
     #para os parametros dos mortos
-    arqpar2 = "./cluster/execution_de_survivor.txt"
+    #arqpar2 = "./cluster/execution_de_non_survivor.txt"
     
-    print('Arquivo de Samples: ', arqpar)
+    print('Arquivo de Samples sobreviventes: ', arqpar)
+    #print('Arquivo de Samples obitos: ', arqpar2)
     print('Nome do output: ', output_path)
     print('Extensao do output: ', ext)
 
@@ -217,6 +226,7 @@ if __name__ == "__main__":
     m = np.loadtxt(arqpar, comments='#')
     M= m[:,:-1]
 
+    '''
     Cov_matrix = np.cov(M.T)
     mean_vector = np.mean(M, axis=0)
     std_vector = np.std(M, axis=0)
@@ -225,51 +235,49 @@ if __name__ == "__main__":
 
     dist = cp.MvNormal(mean_vector, Cov_matrix)
     
+    '''
+    '''
     #--------------------Para mortos---------------------#
     m2 = np.loadtxt(arqpar2, comments='#')
-    M2= m[:,:-1]
+    M2= m2[:,:-1]
 
-    Cov_matrix = np.cov(M2.T)
-    mean_vector = np.mean(M2, axis=0)
-    std_vector = np.std(M2, axis=0)
+    
+    Cov_matrix_2 = np.cov(M2.T)
+    mean_vector_2 = np.mean(M2, axis=0)
+    std_vector_2 = np.std(M2, axis=0)
+ 
     print("mean = ", mean_vector)
     print("std = ", std_vector)
 
-    dist2 = cp.MvNormal(mean_vector, Cov_matrix)
-
+    dist2 = cp.MvNormal(mean_vector_2, Cov_matrix_2)
+    
     '''
-    pi_v = cp.Uniform()
-    beta_ap= cp.Uniform()
-    c_ap1 = cp.Uniform()
-    c_ap2 = cp.Uniform()
-    delta_apm = cp.Uniform()
-    beta_tk = cp.Uniform()
-    delta_c = cp.Uniform()
-    beta_tke = cp.Uniform()
-    pi_c_tke = cp.Uniform()
-    beta_ps =  cp.Uniform()
-    delta_S = cp.Uniform()
-    pi_AS = cp.Uniform()
-    beta_pl = cp.Uniform()
-    delta_L = cp.Uniform()
-    pi_AL = cp.Uniform()
-    beta_th =  cp.Uniform()
-    delta_th =cp.Uniform()
+    
+    #-------------------APENAS1DIST----------------------#
+    #C = np.concatenate ((M,M2))
+    #print("Concatenacao: ")
+    #print(C)
+    
+    Cov_matrix = np.cov(M.T)
+    mean_vector = np.mean(M, axis=0)
+    std_vector = np.std(M, axis=0)
+    print("mean = ", mean_vector)
+    print("std = ", std_vector)
 
-    #dist = cp.J(pi_v, beta_Ap, c_ap1, c_ap2, delta_Apm, beta_tk, beta_ps,
-    beta_pl, delta_S, delta_L, pi_AS, pi_AL, alpha_th, beta_th, pi_c_tke, delta_c, beta_apm, beta_tke)
-    '''
-
+    dist = cp.MvNormal(mean_vector, Cov_matrix)
+    
+    #-------------------APENAS1DIST----------------------#
+    #-------------------***********----------------------#
    
-    #label_param = ("$a_{max}$", "r", "$t_i$", "$t_f$", "e", "$\theta$", "$\tau_1$", "$\tau_2$", "$\tau_3$", "m")
+    #numero de parametros
     npar = len(dist)
-    npar2 = len(dist2)
+    #npar2 = len(dist2)
 
     #grau da aproximacao polinomial
     degpc = 2
     ns = 10000#3*P(degpc,npar)
-    print("number of input parameters txt 1 %d" % npar)
-    print("number of input parameters txt 2 %d" % npar2)
+    print("number of input parameters two txts  %d" % npar)
+    #print("number of input parameters txt 2 %d" % npar2)
     print("polynomial degree %d" % degpc)
     print("min number of samples %d" % ns)
 
@@ -295,20 +303,20 @@ if __name__ == "__main__":
     evals_C = []
     
     samples = dist.sample(ns,"L")
-    samples2 = dist.sample(ns,"L")
+    #samples2 = dist2.sample(ns,"L")
     k = 0
     lpts = range(ns)
     samp = samples.T
-    samp2 = samples.T
+    #samp2 = samples2.T
     
     print("evaluating samples: ")
     for i in tqdm(lpts,bar_format='{l_bar}{bar:20}{r_bar}{bar:-20b}'):
     #for s in samples.T:
         s = samp[k]
-        s2 = samp[k]
+        #s2 = samp2[k]
         k = k+1
         #s = np.concatenate ((s,s2))
-        virus,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = eval_model(s, s2)
+        virus,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = eval_model(s)
         evals_virus.append(virus)
         evals_Ap.append(Ap) 
         evals_Apm.append(Apm) 
@@ -433,7 +441,7 @@ if __name__ == "__main__":
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig(output_path+caso+'_output_Virus'+ext)
-    plt.show()
+    #plt.show()
     
 
     #-------------------------ANTICORPOS--------------------------------------
@@ -470,7 +478,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Ap = plot_confidence_interval(plt, t, evals_Ap, 'green', 'Modelo: Ap')
     plt.savefig(output_path+'Ap'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------APM---------------------------------------------
    
@@ -485,7 +493,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Apm = plot_confidence_interval(plt, t, evals_Apm, 'blue', 'Modelo: Apm')
     plt.savefig(output_path+'Apm'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------Thn---------------------------------------------
     
@@ -500,7 +508,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Thn = plot_confidence_interval(plt, t, evals_Thn, 'black', 'Modelo: Thn')
     plt.savefig(output_path+'Thn'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------The---------------------------------------------
     
@@ -515,7 +523,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_The = plot_confidence_interval(plt, t, evals_The, 'purple', 'Modelo: The')
     plt.savefig(output_path+'The'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------Tkn---------------------------------------------    
     
@@ -530,7 +538,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Tkn = plot_confidence_interval(plt, t, evals_Tkn, 'orange', 'Modelo: Tkn')
     plt.savefig(output_path+'Tkn'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------Tke---------------------------------------------
    
@@ -545,7 +553,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Tke = plot_confidence_interval(plt, t, evals_Tke, 'red', 'Modelo: Tke')
     plt.savefig(output_path+'Tke'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------B---------------------------------------------
     
@@ -560,7 +568,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_B = plot_confidence_interval(plt, t, evals_B, 'green', 'Modelo: B')
     plt.savefig(output_path+'B'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #np.savetxt(output_path+'b.txt',y[:,7])
     
@@ -577,7 +585,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Ps = plot_confidence_interval(plt, t, evals_Ps, 'blue', 'Modelo: Ps')
     plt.savefig(output_path+'Ps'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------Pl---------------------------------------------
     
@@ -592,7 +600,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Pl = plot_confidence_interval(plt, t, evals_Pl, 'black', 'Modelo: Pl')
     plt.savefig(output_path+'Pl'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------Bm---------------------------------------------
     
@@ -607,7 +615,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Bm = plot_confidence_interval(plt, t, evals_Bm, 'purple', 'Modelo: Bm')
     plt.savefig(output_path+'Bm'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------AM---------------------------------------------
     
@@ -622,7 +630,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_AM = plot_confidence_interval(plt, t, evals_AM, 'orange', 'Modelo: A_M')
     plt.savefig(output_path+'A_M'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------AG---------------------------------------------
    
@@ -637,7 +645,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_AG = plot_confidence_interval(plt, t, evals_AG, 'red', 'Modelo: A_G')
     plt.savefig(output_path+'A_G'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------I---------------------------------------------
     
@@ -652,11 +660,11 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_I = plot_confidence_interval(plt, t, evals_I, 'green', 'Modelo: I')
     plt.savefig(output_path+'Ai'+ext,bbox_inches='tight',dpi = 300)
-    plt.show()
+    #plt.show()
     
     #-------------------------C SOBREVIVENTES---------------------------------------------
     
-    '''
+    
     plt.figure('C')
     #dadosCitocinaSobreviventes.plot.scatter(x='Day',y='IL6(pg/mL)',color='g',label='Dados experimentais(Sobreviventes)')
     plt.plot(dadosCitocinaSobreviventes['Day']+5, dadosCitocinaSobreviventes['IL6(pg/mL)'], 'o', label='data', linewidth=4)
@@ -673,24 +681,26 @@ if __name__ == "__main__":
     plt.show()
     
     print("vim ate aqui")
-    '''
+    
+    
+    
     
     
     #-------------------------C OBITOS---------------------------------------------
     
-    
+    '''
     plt.figure('C')
     #dadosCitocinaObitos.plot.scatter(x='Day',y='IL6(pg/mL)',color='y',label='Dados experimentais(Obito)')
-    plt.plot(dadosCitocinaObitos['Day']+5, dadosCitocinaObitos['IL6(pg/mL)'], 'o', label='data', linewidth=4)
+    plt.plot(dadosIL6['Day']+5, dadosIL6['IL6(pg/mL)'], 'o', label='data', linewidth=4)
     plt.xlim(0.0,dias_de_simulação)
     #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('C')
     plt.legend()
     mean_C = plot_confidence_interval(plt, t, evals_C, 'blue', 'Modelo: C')
-    plt.savefig(output_path+'C2.pdf',bbox_inches='tight',dpi = 300)
-    plt.show()
-    
+    plt.savefig(output_path+'C2.png',bbox_inches='tight',dpi = 300)
+    #plt.show()
+    '''
 
 
     
