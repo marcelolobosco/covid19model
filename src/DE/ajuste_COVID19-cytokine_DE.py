@@ -21,7 +21,7 @@ path = '../../data/'
 
 # global data
 # ajustar pela viremia e anticorpos
-dadosViremiaLog10 = pd.read_csv(path+'Viral_load.csv',',')
+dadosViremiaLog10 = pd.read_csv(path+'Viral_load_paper.csv',',')
 dadosAnticorposLog2 = pd.read_csv(path+'IgG_IgM.csv',',')
 dadosIL6 = pd.read_csv(path+'IL6_ajuste.csv',',')
 
@@ -34,6 +34,7 @@ antibody_m = np.power(2,dadosAnticorposLog2['IgM'])-1
 '''
 
 virus = np.power(10, dadosViremiaLog10['Viral_load'])
+virus_plot = np.power(10, dadosViremiaLog10['Plot'])
 antibody_g = dadosAnticorposLog2['IgG']
 antibody_m = dadosAnticorposLog2['IgM']
 il6_data = dadosIL6['IL6(pg/mL)']
@@ -348,11 +349,11 @@ if __name__ == "__main__":
         	
     #define os bounds para cada um dos parâmetros
 
-    opt_de = True
+    opt_de = False
     if opt_de:
 
         bounds = [
-        (1e-2,1e3),
+        (1e-1, 5e2),
         (1e-7,1),
         (1e-3,1e-1),
         (1e-2,1e-1),
@@ -371,7 +372,7 @@ if __name__ == "__main__":
         np.savetxt('params_simple_cytokinev4.txt',result.x)
         best=result.x
     else:
-        best = np.loadtxt('params_simple_cytokinev5.txt')
+        best = np.loadtxt('params_simple_cytokinev4.txt')
     
     #saving the samples for UQ
     #np.savetxt('execution_de_100_ge.txt',execution_de)
@@ -390,8 +391,8 @@ if __name__ == "__main__":
     ax1.set_title('Viremia, Antibodies and Cytokines')
     
     #Plot active infected cases
-    ax1.plot(ts, V, label='Viremia model', linewidth=4)
-    ax1.plot(ts, virus[first_day:], 'o', label='data', linewidth=4)
+    ax1.plot(ts, np.log10(V), label='Viremia model', linewidth=4)
+    ax1.plot(ts, np.log10(virus_plot[first_day:]), 'o', label='data', linewidth=4)
     ax1.set_xlabel('day')
     ax1.set_ylabel('log10 (copies/ml)')    
     ax1.legend()
