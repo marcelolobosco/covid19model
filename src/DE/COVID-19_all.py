@@ -19,7 +19,7 @@ sns.set_style("whitegrid")
 output_path= './output/'
 
 
-V0 = 4.59722506e+00
+V0 = 4.59722506e+01
 Ap0 = 1.0e6#0.6e6
 Apm0 = 0.0
 Ai0=0
@@ -40,10 +40,10 @@ P0 = [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G,Ai0,C0]
 pi_v = 1.091710061112672880e-01
 c_v1 = 2.63
 c_v2 = 0.60
-k_v1 = 5.600298025616778555e-05
-k_v2 = 6.011588247777179580e-05
+k_v1 = 5.600298025616778555e-09
+k_v2 = 6.011588247777179580e-09
 alpha_Ap = 1.87E-06*0.4
-beta_Ap = 2.00E-03
+beta_Ap = 2.00E-05
 k_ap1 = 0.8  
 k_ap2 = 40.0
 
@@ -80,8 +80,8 @@ pi_c_apm = 4.52515051e-01
 pi_c_i = 1.96382616e-03
 pi_c_tke = 0.04730172
 delta_c = 9.94728039e+00
-k_apm = 1.51576968e-01 
-k_v3 = 3.25225701e-03
+k_apm = 1.51576968e-1
+k_v3 = 3.25225701e-09
 k_tk = 1.80727212e-01
 
 model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
@@ -100,7 +100,7 @@ y,d=integrate.odeint(immune_response_v3, P0, t, args=(model_args), full_output=1
 
 
 #######   Viremia  log10 copias/ml ##########
-dadosViremiaLog10 = pd.read_csv('../../data/Viral_load.csv',',')
+dadosViremiaLog10 = pd.read_csv('../../data/Viral_load_paper.csv',',')
 dadosAnticorposLog2 = pd.read_csv('../../data/IgG_IgM_21_1b.csv',',') 
 dadosCitocinaObitos = pd.read_csv('../../data/IL6_non-survivors_19.csv',',')
 dadosCitocinaSobreviventes = pd.read_csv('../../data/IL6_survivors_19.csv',',')
@@ -154,10 +154,10 @@ plt.savefig(output_path+'Anticorpos.pdf',bbox_inches='tight',dpi = 300)
 
 plt.figure('Viremia')
 #dadosViremiaLog10.plot.scatter(x='Day',y='Viral_load',color='m',label='Dados experimentais')
-plt.plot(t, dadosViremiaLog10['Viral_load'], 'o', label='data', linewidth=4)
+plt.plot(t, dadosViremiaLog10['Plot'], 'o', label='data', linewidth=4)
 plt.xlim(0.0,dias_de_simulação)
 #plt.ylim(0.0,8.0)
-plt.plot(t,y[:,0],label='Curva gerada pelo modelo',linewidth=1.5, linestyle="-")
+plt.plot(t,np.log10(y[:,0]),label='Curva gerada pelo modelo',linewidth=1.5, linestyle="-")
 plt.xlabel('Tempo pós-vacinação (dias)')
 plt.ylabel('Viremia')
 plt.legend()

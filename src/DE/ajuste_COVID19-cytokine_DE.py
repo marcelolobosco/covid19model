@@ -70,7 +70,7 @@ def model(x):
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     V0 = x[0] # 2.136323495622534097e+00
-    Ap0 = 1.0e6#0.6e6
+    Ap0 = x[14]#1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
     C0=0
@@ -85,78 +85,16 @@ def model(x):
     A0_M = 0.0  
     A0_G = 0.0
     P0 = [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G,Ai0,C0]
-    #P0 = [x[11], 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    
-    #            pi_v,  c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,k_ap1,k_ap2,delta_Apm, alpha_Tn,    pi_T,   k_te1,delta_te,alpha_B,     pi_B1,   pi_B2,
-    #beta_S,   beta_L, beta_Bm,delta_S,    delta_L, gamma_M, k_bm1,    k_bm2, pi_AS,  pi_AL,delta_A_G, delta_A_M,       c11,     c12,  c13,  c14, Ap0, Thn0,
-    #Tkn0
+  
     
     '''
-    model_args = (x[0], 2.63, 0.60, 9.783944251204167164e-02, 4.164999863476288964e-05, 2.50E-03, 5.5e-01, 0.8, 40.0,
-    x[2], 2.17E-04, 1.0E-05, 1.0E-08,  0.0003,   x[3], 4.826E-06, 1.27E-8, 
-    0.000672, 5.61E-06, 1.0E-06,   2.0, 2.3976E-04, 9.75E-04, 1.0e-5, 2500.0, 0.002,0.00068,     x[4],       
-    x[5], 2.17E-04, 1.0E-07, 1.0E-08, 0.22, 1.0e6, 1.0e6, 5.0e5, 2.5E5, x[6], x[7], x[8], x[9], x[10], x[1])
-    
-    model_args = (1.2, 2.63, 0.60, 4.5e-05, 4.5e-05, 1.87E-06*0.4, 2.00E-03, 0.8, 40.0, 
-    8.14910996e+00, 2.17E-04, 1.9E-05, 1.0E-08, 0.1*0.003, 6.55248840e+01, 2.826E-06, 1.27E-08, 
-    0.000672, 5.61E-07, 1.0E-08, 1.5, 0.8, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.004, 0.0005, 8.00694162e-02, 
-    5.06889922e-00, 2.17E-04, 1.0E-04, 1.0E-08, 0.22,1.0e6, 1.0e6, 5.0e5, 2.5E5,0.000015,0.015,0.000015,0.1,0.000007,1.0e-6)
-
-    model_args = (1.2, 2.63, 0.60, 4.5e-05, 4.5e-05, 1.87E-06*0.4, 2.00E-03, 0.8, 40.0, 
-    8.14910996e+00, 2.17E-04, 1.9E-05, 1.0E-08, 0.1*0.003, 6.55248840e+01, 2.826E-06, 1.27E-08, 
-    0.000672, 5.61E-07, 1.0E-08, 1.5, 0.8, (1.95E-06)*500.0, 1.0e-5, 2500.0, 0.004, 0.0005, 8.00694162e-02, 
-    5.06889922e-00, 2.17E-04, 1.0E-04, 1.0E-08, 0.22,1.0e6, 1.0e6, 5.0e5, 2.5E5,0.000015,0.015,0.000015,0.1,0.000007,1.0e-6)
-    '''
-    
-    '''
-    pi_v = 1.091710061112672880e-01#x[0] #ajuste
-    c_v1 = 2.63
-    c_v2 = 0.60
-    k_v1 = 5.600298025616778555e-05#x[1]#4.5e-05 #ajustar
-    k_v2 = 6.011588247777179580e-05#x[2]#4.5e-05 #ajustar
-    alpha_Ap = 1.87E-06*0.4
-    beta_Ap = 2.00E-03
-    k_ap1 = 0.8  
-    k_ap2 = 40.0
-    
-    delta_Apm = 8.14910996e+00 # ou ajuste carla 5.38E-01
-    alpha_Tn =2.17E-04 
-    pi_T = 1.431849023090428446e-05#x[3]#1.9E-05 #ajustar
-    k_te1 = 1.0E-08 
-    delta_te = 0.0003
-    alpha_B = 3.578236584371140339e+02#x[9] #ajuste
-    pi_B1 = 8.979145365768647095e-05#x[10]#2.826E-06 #ajuste
-    pi_B2 = 1.27E-8
-    
-    beta_S = 0.000672 
-    beta_L = 5.61E-06 
-    beta_Bm = 1.0E-06
-    delta_S = 1.5
-    delta_L = 0.8
-    gamma_M = (1.95E-06)*500.0
-    k_bm1 = 1.0e-5      
-    k_bm2 = 2500.0 
-    pi_AS = 2.850370072424884479e-02#x[4]#0.004 #ajuste
-    pi_AL = 6.304459239904726120e-01#x[5]#0.0005 #ajuste
-    delta_A_G = 3.650482092015642221e-01#x[6] #ajuste
-    delta_A_M = 6.873347140815699419e+00#x[7] #ajuste
-    c11 = 2.17E-04
-    c12 = 1.0E-07
-    c13 = 1.0E-08  
-    c14 = 0.22
-    Ap0 = 1.0e6
-    Thn0 = 1.0e6
-    Tkn0 = 5.0e5
-    B0 = 2.5E5
-    '''
-    
     pi_v = x[8]#0.1955#1.091710061112672880e-01
     c_v1 = 2.63
     c_v2 = 0.60
-    k_v1 = 3.5e-3#5.600298025616778555e-05
-    k_v2 = 9.5e-5#6.011588247777179580e-05
+    k_v1 = x[9]#3.5e-3#5.600298025616778555e-05
+    k_v2 = x[10]#9.5e-5#6.011588247777179580e-05
     alpha_Ap = 1.87E-06*0.4
-    beta_Ap = 2.00E-03
+    beta_Ap = x[11]#2.00E-03
     k_ap1 = 0.8  
     k_ap2 = 40.0
 
@@ -200,49 +138,37 @@ def model(x):
     k_tk = x[7]
     
     
-    
+    model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
+    delta_Apm, alpha_Tn, pi_T, k_te1, delta_te, alpha_B, pi_B1, pi_B2, 
+    beta_S, beta_L, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
+    pi_AL, delta_A_G, delta_A_M, c11, c12, c13, c14, Ap0, Thn0, Tkn0, B0,  
+    pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3, k_tk)  
     '''
-    #ignorar o anterior e verificar esse
     
-    V0 = 1.5e0#4.59722506e+00
-    Ap0 = 1.0e6#0.6e6
-    Apm0 = 0.0
-    Ai0=0
-    C0=0.0
-    Thn0 = (1.0e6)#*0.5
-    The0 = 0.0  #### Convertendo de ul para ml
-    Tkn0 = (1.0e3)*500.0#(1.0e3)*500.0
-    Tke0 = 0.0
-    B0 =  (1.0e3)*250.0
-    Ps0 = 0.0
-    Pl0 = 0.0
-    Bm0 = 0.0
-    A0_M = 0.0  
-    A0_G = 0.0
-    P0 = [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G,Ai0,C0]
-
-
-    pi_v = 0.1955#1.091710061112672880e-01
+    
+    
+      #Model Parameters    
+    pi_v = x[8]#0.1955#
     c_v1 = 2.63
     c_v2 = 0.60
     k_v1 = 3.5e-3#5.600298025616778555e-05
     k_v2 = 9.5e-5#6.011588247777179580e-05
     alpha_Ap = 1.87E-06*0.4
-    beta_Ap = 2.00E-03
-    k_ap1 = 0.8  
-    k_ap2 = 40.0
+    beta_Ap = x[9]#2.00E-03
+    c_ap1 = x[10]#0.8
+    c_ap2 = x[11]#40.0
 
-    delta_Apm = 8.14910996e+00 
+    delta_Apm = x[12]#8.14910996e+00
     alpha_Tn =2.17E-04 
-    pi_T = 1.431849023090428446e-05
-    k_te1 = 1.0E-08 
-    delta_te = 0.0003
-    alpha_B = 3.578236584371140339e+02
+    beta_tk = x[13]#1.431849023090428446e-05
+    pi_tk = 1.0E-08 
+    delta_tk = 0.0003
+    alpha_B = 3.578236584371140339e+02#incluir
     pi_B1 = 8.979145365768647095e-05
     pi_B2 = 1.27E-8
 
-    beta_S = 6.0e-6#0.000672 
-    beta_L = 5.0e-6#5.61E-06 
+    beta_ps = 6.0e-6
+    beta_pl = 5.0e-6
     beta_Bm = 1.0E-06
     delta_S = 2.5
     delta_L = 0.35
@@ -251,29 +177,32 @@ def model(x):
     k_bm2 = 2500.0 
     pi_AS = 0.087#2.850370072424884479e-02
     pi_AL = 0.001#6.304459239904726120e-01
-    delta_A_G = 0.07#3.650482092015642221e-01
-    delta_A_M = 0.07#6.873347140815699419e+00
-    c11 = 2.17E-04
-    c12 = 1.8e-5#1.0E-07
-    c13 = 1.0E-08  
-    c14 = 0.3#0.22
-    Ap0 = 1.0e6
+    delta_ag = 0.07
+    delta_am = 0.07
+    alpha_th = 2.17E-04
+    beta_th = 1.8e-5
+    pi_th = 1.0E-08  
+    delta_th = 0.3
+    Ap0 = x[14]#1.0e6
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
-    pi_c_apm = 4.52515051e-01
-    pi_c_i = 1.96382616e-03
-    pi_c_tke = 0.04730172
-    delta_c = 9.94728039e+00
-    k_apm = 1.51576968e-01 
-    k_v3 = 2.5e-4#3.25225701e-03
-    k_tk = 1.80727212e-01    
-    '''
-    model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, k_ap1, k_ap2,
-    delta_Apm, alpha_Tn, pi_T, k_te1, delta_te, alpha_B, pi_B1, pi_B2, 
-    beta_S, beta_L, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
-    pi_AL, delta_A_G, delta_A_M, c11, c12, c13, c14, Ap0, Thn0, Tkn0, B0,  
-    pi_c_apm, pi_c_i,pi_c_tke,delta_c, k_apm, k_v3, k_tk)  
+
+
+    pi_c_apm = x[1]
+    pi_c_i = x[2]
+    pi_c_tke = x[3]#0.04730172
+    delta_c = x[4]
+    beta_apm = x[5]
+    k_v3 = x[6]
+    beta_tke = x[7] 
+
+       
+    model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, c_ap1, c_ap2,
+    delta_Apm, alpha_Tn, beta_tk, pi_tk, delta_tk, alpha_B, pi_B1, pi_B2, 
+    beta_ps, beta_pl, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
+    pi_AL, delta_ag, delta_am, alpha_th, beta_th, pi_th, delta_th, Ap0, Thn0, Tkn0, B0,  
+    pi_c_apm, pi_c_i,pi_c_tke,delta_c, beta_apm, k_v3, beta_tke) 
     
     Ps= odeint(immune_response_v3, P0, ts, args=(model_args)) 
 
@@ -285,7 +214,7 @@ def model(x):
     erro_V = 0;
     erro_IgG = 0;
     erro_IgM = 0;
-    vnorm=2
+    vnorm=2.0
     
 	
     #Viremia error 
@@ -296,7 +225,7 @@ def model(x):
     V_aux = np.multiply(V, mask_virus[first_day:])
     erro_V = np.linalg.norm(virus[first_day:]-V_aux, vnorm)/np.linalg.norm(virus[first_day:], vnorm)
     #print(np.linalg.norm(V_aux,vnorm))
-    if (math.isnan(erro_V) or math.isinf(erro_V)):
+    if (math.isnan(erro_V) or math.isinf(erro_V) or min(V)<-0.1):
         erro_V = 1e12
     
     #antibody G
@@ -327,8 +256,8 @@ def model(x):
     if (math.isnan(erro_il6) or math.isinf(erro_il6)):
         erro_il6 = 1e12    
     
-    weight = 0.5
-    erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
+    weight = 0.0
+    erro = weight*erro_IgG + weight*erro_IgM + erro_V + weight*erro_il6
     '''
     print("RELATIVE ERROR")
     print("Erro viremia: ", erro_V)
@@ -349,22 +278,28 @@ if __name__ == "__main__":
         	
     #define os bounds para cada um dos parâmetros
 
-    opt_de = False
+    opt_de = True
     if opt_de:
 
         bounds = [
-        (1e-1, 5e2),
-        (1e-7,1),
+        (1, 1e2), 
+        (1e-3,1),
         (1e-3,1e-1),
-        (1e-2,1e-1),
+        (1e-3,1e-1),
         (1e-3,1e1),
-        (1e-7,1),
-        (1e-10,1e-2),
-        (1e-7,1),
-        (1e-2,1e3)
+        (1e-5,1),
+        (1e-5,1),
+        (1e-4,1e2),
+        (1e-1,1e1),
+        (1e-5,1e-1),
+        (1e-5,1e1),
+        (1e-1,1e2),
+        (1e-3,1e2),
+        (1e-10,1e-3),
+        (1e5, 1e7)
         ]
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', popsize=20, disp=True, workers=3)
+        result = differential_evolution(model_adj, bounds, strategy='best1bin',maxiter=100, popsize=30, disp=True, workers=3)
         print('Params order: ')
         print ('...')
         print(result.x)
