@@ -70,7 +70,7 @@ def model(x):
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     V0 = x[0] # 2.136323495622534097e+00
-    Ap0 = x[14]#1.0e6#0.6e6
+    Ap0 = 1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
     C0=0
@@ -158,9 +158,9 @@ def model(x):
     c_ap1 = x[10]#0.8
     c_ap2 = x[11]#40.0
 
-    delta_Apm = x[12]#8.14910996e+00
+    delta_Apm = 8.14910996e+00
     alpha_Tn =2.17E-04 
-    beta_tk = x[13]#1.431849023090428446e-05
+    beta_tk = 1.431849023090428446e-05
     pi_tk = 1.0E-08 
     delta_tk = 0.0003
     alpha_B = 3.578236584371140339e+02#incluir
@@ -183,7 +183,7 @@ def model(x):
     beta_th = 1.8e-5
     pi_th = 1.0E-08  
     delta_th = 0.3
-    Ap0 = x[14]#1.0e6
+    Ap0 = 1.0e6
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
@@ -260,6 +260,18 @@ def model(x):
     
     weight = 0.0
     erro = weight*erro_IgG + weight*erro_IgM + erro_V + weight*erro_il6
+    
+    #print(x)
+    
+    if (erro <= 0.35):
+        print("Entrei")
+        ind = []
+        ind.append(erro)
+        for v in x:
+            ind.append(v)
+        
+        print(ind)
+        execution_de.append(ind)
     '''
     print("RELATIVE ERROR")
     print("Erro viremia: ", erro_V)
@@ -280,7 +292,7 @@ if __name__ == "__main__":
         	
     #define os bounds para cada um dos parâmetros
 
-    opt_de = True
+    opt_de = False
     if opt_de:
 
         bounds = [
@@ -292,29 +304,26 @@ if __name__ == "__main__":
         (1e-5,1), 
         (1e-3,1), 
         (1e-2,1e2), 
-        (1e-2,1e1), 
+        (1e-2,1), 
         (1e-6,1e-1),
         (1e-5,1e1), 
-        (1e-1,1e5), 
-        (1e-3,1e4), 
-        (1e-7,1e-3),
-        (1e5, 1e7)
+        (1e-1,1e5)
         ]
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', maxiter=20,popsize=20, disp=True, workers=3)
+        result = differential_evolution(model_adj, bounds, strategy='best1bin', maxiter=40,popsize=30, disp=True, workers=3)
         print('Params order: ')
         print ('...')
         print(result.x)
         print(result.success)
         #saving the best offspring...
-        np.savetxt('params_simple_cytokinev5.txt',result.x)
+        np.savetxt('params_ajuste_covid19_de.txt',result.x)
         
         best=result.x
     else:
-        best = np.loadtxt('params_simple_cytokinev5.txt')
+        best = np.loadtxt('params_ajuste_covid19_de.txt')
     
     #saving the samples for UQ
-    #np.savetxt('execution_de_100_ge.txt',execution_de)
+    #np.savetxt('execution_de.txt',execution_de)
    
     erro, V, A_m, A_g, il6, ts, erro_V, erro_IgM, erro_IgG, erro_il6 = model(best)
     print("RELATIVE ERROR")

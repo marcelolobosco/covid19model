@@ -109,6 +109,8 @@ def immune_response_v2 (P, t, pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,
     
     return [dV_dt, dAp_dt, dApm_dt, dThn_dt, dThe_dt, dTkn_dt, dTke_dt, dB_dt, dPs_dt, dPl_dt, dBm_dt, dA_M_dt, dA_G_dt, dI_dt, dC_dt]
 
+
+
 def immune_response (P, t, pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,
                      c_ap1, c_ap2, delta_Apm, alpha_Tn, beta_tk, pi_tk, delta_tk,
                      alpha_B, pi_B1, pi_B2, beta_ps, beta_pl, beta_Bm,
