@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from scipy.integrate import odeint
+from scipy.integrate import odeint, solve_ivp
 from math import factorial as fat
 from scipy.optimize import fmin,differential_evolution
 import math
@@ -69,7 +69,7 @@ def model(x):
     ts=range(len(virus))  
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    V0 =  x[0]#2.136323495622534097e+00 
+    V0 =  10.0#x[0]#2.136323495622534097e+00 
     Ap0 = 1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
@@ -155,12 +155,12 @@ def model(x):
     k_v2 = 9.5e-5#6.011588247777179580e-05
     alpha_Ap = 1.87E-06*0.4
     beta_Ap = x[9]#5.16e-02#x[9]#2.00E-03
-    c_ap1 = 8.0#x[10]#0.8
-    c_ap2 = 8.08579916e+04#x[11]#40.0
+    c_ap1 = x[10]#8.0#x[10]#0.8
+    c_ap2 = x[13]#8.08579916e+04#x[11]#40.0
 
-    delta_Apm = 8.14910996e+00
+    delta_Apm = x[14]#8.14910996e+00
     alpha_Tn =2.17E-04 
-    beta_tk = 1.431849023090428446e-05
+    beta_tk = x[15]#1.431849023090428446e-05
     pi_tk = 1.0E-08 
     delta_tk = 0.0003
     alpha_B = 3.578236584371140339e+02#incluir
@@ -175,14 +175,14 @@ def model(x):
     gamma_M = (1.95E-06)*500.0
     k_bm1 = 1.0e-5      
     k_bm2 = 2500.0 
-    pi_AS = 0.087#2.850370072424884479e-02
-    pi_AL = 0.001#6.304459239904726120e-01
+    pi_AS = x[11]#0.087#2.850370072424884479e-02
+    pi_AL = x[12]#0.001#6.304459239904726120e-01
     delta_ag = 0.07
     delta_am = 0.07
     alpha_th = 2.17E-04
     beta_th = 1.8e-5
     pi_th = 1.0E-08  
-    delta_th = 0.3
+    delta_th = x[0]#0.3
     Ap0 = 1.0e6
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
@@ -204,67 +204,106 @@ def model(x):
     pi_AL, delta_ag, delta_am, alpha_th, beta_th, pi_th, delta_th, Ap0, Thn0, Tkn0, B0,  
     pi_c_apm, pi_c_i,pi_c_tke,delta_c, beta_apm, k_v3, beta_tke) 
     
-    Ps= odeint(immune_response_v3, P0, ts, args=(model_args)) 
+    #Ps= odeint(immune_response_v3, P0, ts, args=(model_args))  
+    #V=Ps[:,0] # virus
+    #A_m=Ps[:,11] # antibody
+    #A_g=Ps[:,12] # antibody
+    #il6 = Ps[:,14] #citocine
 
-    V=Ps[:,0] # virus
-    A_m=Ps[:,11] # antibody
-    A_g=Ps[:,12] # antibody
-    il6 = Ps[:,14] #citocine
+    def teste(t, y):
+        return immune_response_v3_2(t, y, *model_args)
     
-    erro_V = 0;
-    erro_IgG = 0;
-    erro_IgM = 0;
+    Ps= solve_ivp(teste,(0, len(virus)), P0, t_eval=ts, method='Radau') 
+    #print(Ps)
+    V=Ps.y[0,:] # virus
+    A_m=Ps.y[11,:] # antibody
+    A_g=Ps.y[12,:] # antibody
+    il6 = Ps.y[14,:] #citocine
+    
+    erro_V = 0
+    erro_IgG = 0
+    erro_IgM = 0
+    erro_il6 = 0
     vnorm=2.0
     
-	
-    #Viremia error 
-    #virus represents experimental data, V the numerical one 
+    sum_v = np.sum(V)
+    sum_am = np.sum(A_m)
+    sum_ag = np.sum(A_g)
+    sum_il6 = np.sum(il6)
+    #print(np.log10(V))
+    #print(sum_am)
+    #print(sum_ag)
+    #print(sum_il6)
     
-    #virus_aux = np.multiply(virus, mask_virus)
-    if (min(V)< -0.1):
-        erro_V = 1e12
+    if (math.isnan(sum_v) or math.isinf(sum_v) or 
+    math.isnan(sum_am) or math.isinf(sum_am) or 
+    math.isnan(sum_ag) or math.isinf(sum_ag) or 
+    math.isnan(sum_il6) or math.isinf(sum_il6) or 
+    (math.isinf(np.sum(np.log10(V)))) or (min(np.log10(V+1))<-0.1)):
+        erro = 1e12
     else:
+        '''
+        Ps= odeint(immune_response_v3, P0, ts, args=(model_args)) 
+
+        V=Ps[:,0] # virus
+        A_m=Ps[:,11] # antibody
+        A_g=Ps[:,12] # antibody
+        il6 = Ps[:,14] #citocine
+        '''
+        #Viremia error 
+        #virus represents experimental data, V the numerical one 
+        
+        #virus_aux = np.multiply(virus, mask_virus)
         V_aux = np.multiply(np.log10(V[first_day:]), mask_virus[first_day:])
         erro_V = np.linalg.norm(np.log10(virus[first_day:])-V_aux, vnorm)/np.linalg.norm(np.log10(virus[first_day:]), vnorm)
         #print(np.linalg.norm(V_aux,vnorm))
         if (math.isnan(erro_V) or math.isinf(erro_V)):
             #print("Com NaN ou Inf", x)
             erro_V = 1e12
-    
-    #antibody G
-    #print(len(antibody_g), len(mask_antibodies))
-    #print(antibody_g)
-    
-    antibody_g_aux = np.multiply(antibody_g[first_day:], mask_antibodies[first_day:])
-    IgG_aux = np.multiply(A_g[first_day:], mask_antibodies[first_day:])
-    erro_IgG = np.linalg.norm(antibody_g_aux-IgG_aux, vnorm)/np.linalg.norm(antibody_g_aux, vnorm)
-    #print(np.linalg.norm(antibody_g_aux[first_day:]-IgG_aux, vnorm))
-    if (math.isnan(erro_IgG) or math.isinf(erro_IgG)):
-        erro_IgG = 1e12
-    
-    #antibody M
-    antibody_m_aux = np.multiply(antibody_m[first_day:], mask_antibodies[first_day:])
-    IgM_aux = np.multiply(A_m[first_day:], mask_antibodies[first_day:])
-    erro_IgM = np.linalg.norm(antibody_m_aux-IgM_aux, vnorm)/np.linalg.norm(antibody_m_aux, vnorm)
-    #print(antibody_m_aux[first_day:]-IgM_aux)
-    if (math.isnan(erro_IgM) or math.isinf(erro_IgM)):
-        erro_IgM = 1e12
+        
+        #antibody G
+        #print(len(antibody_g), len(mask_antibodies))
+        #print(antibody_g)
+        
+        antibody_g_aux = np.multiply(antibody_g[first_day:], mask_antibodies[first_day:])
+        IgG_aux = np.multiply(A_g[first_day:], mask_antibodies[first_day:])
+        erro_IgG = np.linalg.norm(antibody_g_aux-IgG_aux, vnorm)/np.linalg.norm(antibody_g_aux, vnorm)
+        #print(np.linalg.norm(antibody_g_aux[first_day:]-IgG_aux, vnorm))
+        if (math.isnan(erro_IgG) or math.isinf(erro_IgG)):
+            erro_IgG = 1e12
+        
+        #antibody M
+        antibody_m_aux = np.multiply(antibody_m[first_day:], mask_antibodies[first_day:])
+        IgM_aux = np.multiply(A_m[first_day:], mask_antibodies[first_day:])
+        erro_IgM = np.linalg.norm(antibody_m_aux-IgM_aux, vnorm)/np.linalg.norm(antibody_m_aux, vnorm)
+        #print(antibody_m_aux[first_day:]-IgM_aux)
+        if (math.isnan(erro_IgM) or math.isinf(erro_IgM)):
+            erro_IgM = 1e12
 
-    #cytokine il-6
-    il6data_aux = np.multiply(il6_data[first_day:], mask_cytokine[first_day:])
-    il6_aux = np.multiply(il6[first_day:], mask_cytokine[first_day:])
-    #print(il6_aux)
-    erro_il6 = np.linalg.norm(il6data_aux-il6_aux, vnorm)/np.linalg.norm(il6data_aux, vnorm)
-    #print(antibody_m_aux[first_day:]-IgM_aux)
-    if (math.isnan(erro_il6) or math.isinf(erro_il6)):
-        erro_il6 = 1e12    
+        #cytokine il-6
+        il6data_aux = np.multiply(il6_data[first_day:], mask_cytokine[first_day:])
+        il6_aux = np.multiply(il6[first_day:], mask_cytokine[first_day:])
+        #print(il6_aux)
+        erro_il6 = np.linalg.norm(il6data_aux-il6_aux, vnorm)/np.linalg.norm(il6data_aux, vnorm)
+        #print(antibody_m_aux[first_day:]-IgM_aux)
+        if (math.isnan(erro_il6) or math.isinf(erro_il6)):
+            erro_il6 = 1e12    
+        
+        
+        #penalizacoes
+        #if (erro_V>0.3):
+        #    erro_V=erro_V*5
+        #tot=np.sum(mask_antibodies)+np.sum(mask_cytokine)+np.sum(mask_virus)
+        #wigg =  wigm= np.sum(mask_antibodies)/tot
+        #wil6 = np.sum(mask_cytokine)/tot
+        #wv = np.sum(mask_virus)/tot
+        weight = 0.5
+        erro = weight*erro_IgG + weight*erro_IgM + erro_V + weight*erro_il6
+        #erro = max(wv*erro_V, wil6*erro_il6, wigg*erro_IgM, wigm*erro_IgG)
+        #erro = max(1.5*erro_V, erro_il6, erro_IgM, erro_IgG)
+        #print(x)
     
-    weight = 0.1
-    erro = weight*erro_IgG + weight*erro_IgM + erro_V + weight*erro_il6
-    
-    #print(x)
-    
-    if (erro <= 0.7):
+    if (erro <= 0.2):
         
         ind = []
         ind.append(erro)
@@ -293,25 +332,30 @@ if __name__ == "__main__":
         	
     #define os bounds para cada um dos parâmetros
 
-    opt_de = True
+    opt_de = False
     if opt_de:
 
         bounds = [
-        (8, 11), 
-        (2,3), 
+        (1e-2, 1e0), #delta_th=0.3
+        (1,1e1), 
         (5e-4,1e-1),
-        (1e-3,1e-1), #	
+        (1e-4,1e-1), #	
         (1,1e2), 
-        (1e-2,3e-2), #muito sensivel a ocilacoes no virus
+        (1e-2,9e-2), #muito sensivel a oscilacoes no virus**
         (1e-4,5e-1), 
         (1,1e2), 
-        (0.8,1.2), #muito sensivel a ocilacoes no virus
-        (4e-2,7e-2)#, #muito sensivel a ocilacoes no virus
-        #(1,1e1), #muito sensivel a ocilacoes no virus
-        #(1e3,1e5)
+        (1e-1,1e1), #muito sensivel a oscilacoes no virus
+        (1e-2,1e-1), #muito sensivel a oscilacoes no virus **
+        (1,1e1), #c_ap1muito sensivel a oscilacoes no virus
+        (0.001, 0.1),#pi_AS
+        (0.00001, 0.001),#pi_AL
+        (1.0e+4, 1.0e+6),#c_ap2 #beta_tk = 1.431849023090428446e-05
+        (1,5e1),#delta_apm
+        (1e-6, 1e-4)#beta_tk1.431849023090428446e-05
         ]
+
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', maxiter=40,popsize=30, disp=True, workers=3)
+        result = differential_evolution(model_adj, bounds, strategy='best1bin', maxiter=50,popsize=40, disp=True, workers=3)
         print('Params order: ')
         print ('...')
         print(result.x)
