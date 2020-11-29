@@ -69,7 +69,7 @@ def model(x):
     ts=range(len(virus))  
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    V0 =  9.9#x[0]#2.136323495622534097e+00 
+    V0 =  x[0]#2.136323495622534097e+00 
     Ap0 = 1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
@@ -148,41 +148,41 @@ def model(x):
     
     
       #Model Parameters    
-    pi_v = x[8]#0.1955#
+    pi_v = x[8]#0.1955#1.091710061112672880e-01
     c_v1 = 2.63
     c_v2 = 0.60
-    k_v1 = 3.5e-3#5.600298025616778555e-05
-    k_v2 = 9.5e-5#6.011588247777179580e-05
+    k_v1 = x[9]#3.5e-3#5.600298025616778555e-05
+    k_v2 = x[10]#9.5e-5#6.011588247777179580e-05
     alpha_Ap = 1.87E-06*0.4
-    beta_Ap = x[9]#5.16e-02#x[9]#2.00E-03
-    c_ap1 = x[10]#8.0#x[10]#0.8
-    c_ap2 = x[13]#8.08579916e+04#x[11]#40.0
+    beta_Ap = x[11]#2.00E-03
+    c_ap1 = 8.0#x[10]#0.8
+    c_ap2 = 8.08579916e+04#x[11]#40.0
 
-    delta_Apm = x[14]#8.14910996e+00
+    delta_Apm = 8.14910996e+00
     alpha_Tn =2.17E-04 
-    beta_tk = x[15]#1.431849023090428446e-05
+    beta_tk = 1.431849023090428446e-05
     pi_tk = 1.0E-08 
     delta_tk = 0.0003
     alpha_B = 3.578236584371140339e+02#incluir
     pi_B1 = 8.979145365768647095e-05
     pi_B2 = 1.27E-8
 
-    beta_ps = x[16]#6.0e-6
-    beta_pl = x[17]#5.0e-6
+    beta_ps = 6.0e-6
+    beta_pl = 5.0e-6
     beta_Bm = 1.0E-06
     delta_S = 2.5
     delta_L = 0.35
     gamma_M = (1.95E-06)*500.0
     k_bm1 = 1.0e-5      
     k_bm2 = 2500.0 
-    pi_AS = x[11]#0.087#2.850370072424884479e-02
-    pi_AL = x[12]#0.001#6.304459239904726120e-01
+    pi_AS = 0.087#0.087#2.850370072424884479e-02
+    pi_AL = 0.001#0.001#6.304459239904726120e-01
     delta_ag = 0.07
     delta_am = 0.07
     alpha_th = 2.17E-04
     beta_th = 1.8e-5
     pi_th = 1.0E-08  
-    delta_th = x[0]#0.3
+    delta_th = 0.3
     Ap0 = 1.0e6
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
@@ -203,6 +203,7 @@ def model(x):
     beta_ps, beta_pl, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
     pi_AL, delta_ag, delta_am, alpha_th, beta_th, pi_th, delta_th, Ap0, Thn0, Tkn0, B0,  
     pi_c_apm, pi_c_i,pi_c_tke,delta_c, beta_apm, k_v3, beta_tke) 
+    
     
     #Ps= odeint(immune_response_v3, P0, ts, args=(model_args))  
     #V=Ps[:,0] # virus
@@ -332,28 +333,22 @@ if __name__ == "__main__":
         	
     #define os bounds para cada um dos parâmetros
 
-    opt_de = True
+    opt_de = False
     if opt_de:
 
         bounds = [
-        (1e-2, 1e1), #delta_th=0.3
-        (1,1e2), 
-        (5e-4,1e-1),
-        (1e-4,1e-1), #	
-        (1,1e3), 
-        (1e-3,9e-2), #muito sensivel a oscilacoes no virus**
-        (1e-4,5e-1), 
-        (1,1e2), 
-        (0.8,1.5), #muito sensivel a oscilacoes no virus
-        (1e-2,1e0), #muito sensivel a oscilacoes no virus **
-        (1,1e1), #c_ap1muito sensivel a oscilacoes no virus
-        (0.001, 0.1),#pi_AS
-        (0.00001, 0.001),#pi_AL
-        (1.0e+4, 1.0e+6),#c_ap2 #beta_tk = 1.431849023090428446e-05
-        (1,5e1),#delta_apm
-        (1e-6, 1e-3),#beta_tk1.431849023090428446e-05
-        (1.0e-7, 1.0e-5), #beta_ps=6.0e-6
-        (1.0e-7, 1.0e-5) #beta_pl=6.0e-6
+        (1, 1e2), #v0
+        (1,1e2), #pi_c_apm
+        (5e-4,1e-1),#pi_c_i
+        (1e-4,1e-1), #	pi_c_tke
+        (1,1e3), #delta_c
+        (1e-3,9e-2), #beta_apm muito sensivel a oscilacoes no virus**
+        (1e-4,5e-1), #k_v3
+        (1,1e2), #beta_tke
+        (0.8,1.5), #pi_v muito sensivel a oscilacoes no virus
+        (1e-4, 1e-2),#kv1
+        (1e-6, 1e-4), #kv2
+        (1e-2,1e0) # beta_Ap muito sensivel a oscilacoes no virus **
         ]
 
         #chama a evolução diferencial que o result contém o melhor individuo
@@ -363,11 +358,11 @@ if __name__ == "__main__":
         print(result.x)
         print(result.success)
         #saving the best offspring...
-        np.savetxt('params_ajuste_covid19_de.txt',result.x)
+        np.savetxt('params_ajuste_covid19_de_virus.txt',result.x)
         
         best=result.x
     else:
-        best = np.loadtxt('params_ajuste_covid19_de.txt')
+        best = np.loadtxt('params_ajuste_covid19_de_virus.txt')
     
     #saving the samples for UQ
     #np.savetxt('execution_de.txt',execution_de)
