@@ -153,16 +153,16 @@ def model(x):
     c_v2 = 0.60
     k_v1 = x[9]#3.5e-3#5.600298025616778555e-05
     k_v2 = x[10]#9.5e-5#6.011588247777179580e-05
-    alpha_Ap = 1.87E-06*0.4
+    alpha_Ap = 1.0
     beta_Ap = x[11]#2.00E-03
     c_ap1 = 8.0#x[10]#0.8
-    c_ap2 = 8.08579916e+04#x[11]#40.0
+    c_ap2 = 8.08579916e+06#x[11]#40.0
 
-    delta_Apm = 8.14910996e+00
-    alpha_Tn =2.17E-04 
+    delta_Apm = 4.0e-2#8.14910996e00
+    alpha_Tn =1.0
     beta_tk = 1.431849023090428446e-05
-    pi_tk = 1.0E-08 
-    delta_tk = 0.0003
+    pi_tk = 1.0E-08
+    delta_tk = 0.0003*100
     alpha_B = 3.578236584371140339e+02#incluir
     pi_B1 = 8.979145365768647095e-05
     pi_B2 = 1.27E-8
@@ -181,9 +181,9 @@ def model(x):
     delta_am = 0.07
     alpha_th = 2.17E-04
     beta_th = 1.8e-5
-    pi_th = 1.0E-08  
+    pi_th = 1.0E-08
     delta_th = 0.3
-    Ap0 = 1.0e6
+    #Ap0 = 1.0e6
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
@@ -195,7 +195,7 @@ def model(x):
     delta_c = x[4]
     beta_apm = x[5]
     k_v3 = x[6]
-    beta_tke = x[7] 
+    beta_tke = x[7]
 
        
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, c_ap1, c_ap2,
@@ -220,6 +220,7 @@ def model(x):
     A_m=Ps.y[11,:] # antibody
     A_g=Ps.y[12,:] # antibody
     il6 = Ps.y[14,:] #citocine
+    inf = Ps.y[2,:] #infectado
     
     erro_V = 0
     erro_IgG = 0
@@ -323,7 +324,7 @@ def model(x):
     #erro = erro_V
 
 
-    return [erro, V, A_m, A_g,il6, ts, erro_V, erro_IgM, erro_IgG, erro_il6]
+    return [erro, V, A_m, A_g,il6, ts, erro_V, erro_IgM, erro_IgG, erro_il6, inf]
 
 def model_adj(x):
     result = model(x)
@@ -338,17 +339,17 @@ if __name__ == "__main__":
 
         bounds = [
         (1, 1e2), #v0
-        (1,1e2), #pi_c_apm
-        (5e-4,1e-1),#pi_c_i
-        (1e-4,1e-1), #	pi_c_tke
-        (1,1e3), #delta_c
-        (1e-3,9e-2), #beta_apm muito sensivel a oscilacoes no virus**
+        (1,5e2), #pi_c_apm
+        (5e-3,1e-1),#pi_c_i
+        (1e-5,1e-1), #	pi_c_tke
+        (1e1,1e3), #delta_c
+        (1e-3,1e0), #beta_apm muito sensivel a oscilacoes no virus**
         (1e-4,5e-1), #k_v3
-        (1,1e2), #beta_tke
+        (1e-6,1e-4), #beta_tke
         (0.8,1.5), #pi_v muito sensivel a oscilacoes no virus
-        (1e-4, 1e-2),#kv1
-        (1e-6, 1e-4), #kv2
-        (1e-2,1e0) # beta_Ap muito sensivel a oscilacoes no virus **
+        (1e-5, 1e-2),#kv1
+        (1e-7, 1e-4), #kv2
+        (1e-5,1e0) # beta_Ap muito sensivel a oscilacoes no virus **
         ]
 
         #chama a evolução diferencial que o result contém o melhor individuo
@@ -367,14 +368,14 @@ if __name__ == "__main__":
     #saving the samples for UQ
     #np.savetxt('execution_de.txt',execution_de)
    
-    erro, V, A_m, A_g, il6, ts, erro_V, erro_IgM, erro_IgG, erro_il6 = model(best)
+    erro, V, A_m, A_g, il6, ts, erro_V, erro_IgM, erro_IgG, erro_il6, inf = model(best)
     print("RELATIVE ERROR")
     print("Erro viremia: ", erro_V)
     print("Erro IgM: ", erro_IgM)
     print("Erro IgG: ", erro_IgG)
     print("Erro il6: ", erro_il6)
     
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1)
     fig.set_size_inches(12, 25)
    
    
@@ -411,5 +412,10 @@ if __name__ == "__main__":
     ax4.set_ylabel('(pg/mL)')
     ax4.legend()
     ax4.grid()
+    
+    ax5.plot(ts, inf, label='Apm model', linewidth=4)
+    ax5.set_xlabel('day')
+    ax5.legend()
+    ax5.grid()
 
     plt.show()

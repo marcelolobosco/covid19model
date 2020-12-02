@@ -69,7 +69,7 @@ def model(x):
     ts=range(len(virus))  
     #       V0,   Ap0,Apm0,  Thn0,The0,  Tkn0,,Tke0,     B0, Ps0, Pl0, Bm0, A0_M, A0_G Ai C
     #P0 = [9.971841136161140184e+02, 1.0e6, 0.0, 1.0e6, 0.0, 5.0e5, 0.0, 1.25E5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    V0 =  3.02514449e+01 #x[0]#2.136323495622534097e+00 
+    V0 =  z[0]#2.136323495622534097e+00  
     Ap0 = 1.0e6#0.6e6
     Apm0 = 0.0
     Ai0=0
@@ -148,54 +148,54 @@ def model(x):
     
     
       #Model Parameters    
-    pi_v = 1.239122007490762956e+00#x[8]#0.1955#1.091710061112672880e-01
+    pi_v = z[8]#0.1955#1.091710061112672880e-01
     c_v1 = 2.63
     c_v2 = 0.60
-    k_v1 = 4.074914859019632130e-02
-    k_v2 = 3.664348294667734058e-05#x[10]#9.5e-5#6.011588247777179580e-05
-    alpha_Ap = 1.87E-06*0.4
-    beta_Ap = 5.748390263404423717e-02#x[11]#2.00E-03
+    k_v1 = z[9]
+    k_v2 = z[10]#9.5e-5#6.011588247777179580e-05
+    alpha_Ap = 1.0
+    beta_Ap = z[11]#2.00E-03
     c_ap1 = 8.0#x[10]#0.8
-    c_ap2 = 8.08579916e+04#x[11]#40.0
+    c_ap2 = 8.08579916e+06#x[11]#40.0
 
-    delta_Apm = 8.14910996e+00
-    alpha_Tn =2.17E-04 
+    delta_Apm = 4.0e-2#8.14910996e00
+    alpha_Tn =1.0
     beta_tk = 1.431849023090428446e-05
-    pi_tk = 1.0E-08 
-    delta_tk = 0.0003
+    pi_tk = 1.0E-08
+    delta_tk = 0.0003*100
     alpha_B = 3.578236584371140339e+02#incluir
     pi_B1 = 8.979145365768647095e-05
     pi_B2 = 1.27E-8
 
-    beta_ps = 2.006520080920685608e-06
-    beta_pl = 1.189263128657398219e-06
+    beta_ps = 6.0e-6
+    beta_pl = 5.0e-6
     beta_Bm = 1.0E-06
     delta_S = 2.5
     delta_L = 0.35
     gamma_M = (1.95E-06)*500.0
     k_bm1 = 1.0e-5      
     k_bm2 = 2500.0 
-    pi_AS = 4.422081842730109930e-02
-    pi_AL = 7.021486442581976670e-04
+    pi_AS = 0.087#0.087#2.850370072424884479e-02
+    pi_AL = 0.001#0.001#6.304459239904726120e-01
     delta_ag = 0.07
     delta_am = 0.07
     alpha_th = 2.17E-04
     beta_th = 1.8e-5
-    pi_th = 1.0E-08  
+    pi_th = 1.0E-08
     delta_th = 0.3
-    Ap0 = 1.0e6
+    #Ap0 = 1.0e6
     Thn0 = 1.0e6
     Tkn0 = 5.0e5
     B0 = 2.5E5
 
 
-    pi_c_apm = 3.30598859e+01#x[1]
-    pi_c_i = 7.27465600e-02#x[2]
-    pi_c_tke = 9.47083313e-02#x[3]#0.04730172
-    delta_c = 6.076707938151348571e+02#x[4]
-    beta_apm = x[0]#4.492678675586297965e-02#x[5]
-    k_v3 = 3.117300692366209436e-03#x[6]
-    beta_tke = x[1]#2.703419803803602406e+01#x[7] 
+    pi_c_apm = z[1]
+    pi_c_i = x[2]#z[2]
+    pi_c_tke = z[3]#0.04730172
+    delta_c = z[4]
+    beta_apm = x[0]#5.766720243000386659e-03#z[5]
+    k_v3 = z[6]
+    beta_tke = x[1]#1.776047056290664901e-06#z[7] 
 
        
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, c_ap1, c_ap2,
@@ -298,10 +298,10 @@ def model(x):
         #wigg =  wigm= np.sum(mask_antibodies)/tot
         #wil6 = np.sum(mask_cytokine)/tot
         #wv = np.sum(mask_virus)/tot
-        weight = 0.5
-        #erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
+        weight = 0.1
+        erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
         #erro = max(wv*erro_V, wil6*erro_il6, wigg*erro_IgM, wigm*erro_IgG)
-        erro = max(erro_V, erro_il6, erro_IgM, erro_IgG)
+        #erro = max(erro_V, erro_il6, erro_IgM, erro_IgG)
         #print(x)
     
     if (erro <= 0.2):
@@ -333,16 +333,18 @@ if __name__ == "__main__":
         	
     #define os bounds para cada um dos parâmetros
 
+    #carregar parametros do ajuste do virus
+    z=np.loadtxt('params_ajuste_covid19_de_virus.txt');
     opt_de = True
     if opt_de:
 
         bounds = [
-        (1e-4,1e1),
-        (1e-4,1e1)
+        (1e-3,1e0),
+        (1e-6,1e-4),
+        (5e-3,1e-1),#pi_c_i
         ]
-
         #chama a evolução diferencial que o result contém o melhor individuo
-        result = differential_evolution(model_adj, bounds, strategy='best1bin', maxiter=50,popsize=40, disp=True, workers=3)
+        result = differential_evolution(model_adj, bounds, strategy='best1bin', maxiter=50,popsize=80, disp=True, workers=3)
         print('Params order: ')
         print ('...')
         print(result.x)
