@@ -17,19 +17,27 @@ if __name__ == "__main__":
 		sys.exit(0)
 	arqsamples = sys.argv[1]
 	
-	opt_scatter = False
-	opt_hitogram = True;
+	opt_scatter = True
+	opt_hitogram = False;
 	
 	
 	m = np.loadtxt(arqsamples, comments='#');
-	m = m[:-1]
+	
+	
+	num_rows, num_cols = m.shape
+	print(num_rows, num_cols)
+
+	m=m[m[:,0].argsort()]
+	m=m[:25000]
+	num_rows, num_cols = m.shape
+	print(num_rows, num_cols)    
+	m = m[:,1:]
 
 	colors = np.array([0.0, 0.0, 0.0])
 	area = np.pi
 
-	labels = ('pi_v', 'beta_Ap', 'c_ap1', 'c_ap2', 'delta_Apm', 'beta_tk', 
-        'beta_ps', 'beta_pl', 'delta_S', 'delta_L', 'pi_AS', 'pi_AL', 'alpha_th', 
-        'beta_th', 'pi_c_tke', 'delta_c', 'beta_apm', 'beta_tke')
+	labels = ('v0', 'pi_c_apm', 'pi_c_i', 'pi_c_tke', 'delta_c', 'beta_apm',
+        'k_v3','beta_tke','pi_v','k_v1','k_v2','beta_Ap')
 	vsize = len(labels)
 	
 	if (opt_scatter):
@@ -46,7 +54,7 @@ if __name__ == "__main__":
 					ax[i][j].set_ylabel(labels[j])
 				elif(i==j): 			
 					ax[i][j].hist(m[:,i], bins=20, density=True, color='gray')
-					print(labels[i]+"\t{:.2e}".format(m[:,i].mean())+"\t{:.2e}".format(np.std(m[:,i])))
+					print(labels[i]+"\t{:.1e}".format(m[:,i].mean())+"\t{:.1e}".format(np.std(m[:,i])))
 				else:    
 					ax[i][j].set_visible(False)                
 

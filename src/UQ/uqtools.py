@@ -109,7 +109,7 @@ def plot_confidence_interval(ax, time, evals, linecolor, textlabel):
     perc_min = 2.5
     perc_max = 97.5
     percentile = np.percentile(evals, [perc_min, perc_max], axis=0)
-    ax.plot(time, mean, lw=2, color=linecolor, label=textlabel)
+    ax.plot(time, mean, lw=1.5, color=linecolor, label=textlabel)
     ax.fill_between(time, percentile[0,:], percentile[1,:], alpha=0.5, color=linecolor)
     return mean
 

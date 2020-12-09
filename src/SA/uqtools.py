@@ -87,8 +87,8 @@ def plot_sensitivity(ax, time, poly, dist, label_param):
         if k%len(vcolor)==0:
             l+=1;
         
-    ax.xlabel('tempo (dias)')
-    ax.ylabel('indices Sobol')
+    ax.xlabel('Time (days)')
+    ax.ylabel('Sobol Main Index')
 
 def plot_sensitivity_mc(ax, time, main_sobol_s, label_param):
     """
@@ -103,15 +103,15 @@ def plot_sensitivity_mc(ax, time, main_sobol_s, label_param):
     l = 0
     
     for sm in main_sobol_s:
-        ax.plot(time, sm, color=vcolor[k%len(vcolor)],ls=vline[l], lw=2, label=label_param[k])
+        ax.plot(time, sm, color=vcolor[k%len(vcolor)],ls=vline[l], lw=1.5, label=label_param[k])
         k +=1
         if k%len(vcolor)==0:
             l+=1;
         
-    ax.xlabel('tempo (dias)')
-    ax.ylabel('indices Sobol')
+    ax.xlabel('Time (days)')
+    ax.ylabel('Sobol Main Index')
 
-def plot_highest_sensitivity_mc(ax, time, main_sobol_s, label_param):
+def plot_highest_sensitivity_mc(ax, time, main_sobol_s, label_param, num):
     """
     Compute and plot Sobol indices
     """
@@ -131,18 +131,18 @@ def plot_highest_sensitivity_mc(ax, time, main_sobol_s, label_param):
         ms.append(sum(sm))
     ms.sort(reverse=True)
     
-    threshold = ms[11]
+    threshold = ms[num-1]
     
     for sm in main_sobol_s:
         if sum(sm) >= threshold:
-            ax.plot(time, sm, color=vcolor[k%len(vcolor)],ls=vline[l], lw=2, label=label_param[i])
+            ax.plot(time, sm, color=vcolor[k%len(vcolor)],ls=vline[l], lw=1.5, label=label_param[i])
             k +=1
             if k%len(vcolor)==0:
                 l+=1;
         i+=1
         
-    ax.xlabel('tempo (dias)')
-    ax.ylabel('indices Sobol')
+    ax.xlabel('Time (days)')
+    ax.ylabel('Sobol Main Index')
 
 
 def plot_mean_std_poly(ax, time, poly, dist, linecolor, textlabel):
@@ -174,7 +174,7 @@ def plot_confidence_interval(ax, time, evals, linecolor, textlabel):
     perc_min = 2.5
     perc_max = 97.5
     percentile = np.percentile(evals, [perc_min, perc_max], axis=0)
-    ax.plot(time, mean, lw=2, color=linecolor, label=textlabel)
+    ax.plot(time, mean, lw=1.5, color=linecolor, label=textlabel)
     ax.fill_between(time, percentile[0,:], percentile[1,:], alpha=0.5, color=linecolor)
     return mean
 
