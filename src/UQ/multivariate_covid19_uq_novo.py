@@ -1,39 +1,32 @@
-#!/usr/bin/python
-
+#Importação de Bibliotecas
 import sys
 import numpy as np
 import chaospy as cp
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-#from scipy.optimize import fmin,differential_evolution
 import pandas as pd
-
-# datas
-#import matplotlib.dates as mdates
-#import datetime as dt
-
-# barra de progresso =)
-# sudo pip install tqdm
 from tqdm import tqdm
 from tqdm import tqdm_gui
-
-# Bibliotecas proprias
-
 from uqtools import *
 from NovoModelo import *
 
-#sobol
-#from SALib.sample import saltelli
-#from SALib.analyze import sobol
-#from SALib.test_functions import Ishigami
-
-
-
 #################################LEITURA DE DADOS#############################
+"""
+    Reading the data from (colocar fonte aqui)
 
+    :param dadosViremiaLog10: dataframe
+    :param dadosAnticorposLog2: dataframe
+    :param dadosCitocinaObitos: dataframe
+    :param dadosCitocinaSobreviventes: dataframe
+    :param dadosAnticorposLog2_avg: dataframe
+    :param antibody_g: dataframe
+    :param antibody_m: dataframe
+    :param dadosAnticorposLog2_avg: dataframe
+
+    """
 #from COVID-19_all
-    #######   Viremia  log10 copias/ml ##########
-#dadosViremiaLog10 = pd.read_csv('../../data/Viral_load.csv',',')
+#######   Viremia  log10 copias/ml ##########
+
 dadosViremiaLog10 = pd.read_csv('../../data/Viral_load.csv',',')
 dadosAnticorposLog2 = pd.read_csv('../../data/IgG_IgM_21_1b.csv',',') 
 dadosCitocinaObitos = pd.read_csv('../../data/IL6_non-survivors_19.csv',',')
@@ -42,13 +35,11 @@ dadosAnticorposLog2_avg = pd.read_csv('../../data/IgG_IgM.csv',',')
 antibody_g = dadosAnticorposLog2_avg['IgG']
 antibody_m = dadosAnticorposLog2_avg['IgM']
 dadosIL6= pd.read_csv('../../data/IL6_storm_ajuste.csv',',')
-#il6_data = dadosIL6['IL6(pg/mL)']
-
 dadosAnticorposLog2_avg = pd.read_csv('../../data/IgG_IgM.csv',',')
 antibody_g = dadosAnticorposLog2_avg['IgG']
 antibody_m = dadosAnticorposLog2_avg['IgM']
 
-#TEMPO
+#Runtime
 dias_de_simulação = 35
 t=range(dias_de_simulação)
 
@@ -56,7 +47,9 @@ t=range(dias_de_simulação)
 
 def plot_confidence_interval_log(ax, time, evals, linecolor, textlabel):
     """
-    Compute and plot statistical moments (mean,std)
+    Compute and plot statistical moments (mean,std) within a 95% confidence interval with log data
+
+    :return mean:
     """
     mean = np.mean(evals, axis=0)
     sdev = np.std(evals, axis=0)
@@ -68,16 +61,54 @@ def plot_confidence_interval_log(ax, time, evals, linecolor, textlabel):
     return mean
 
 
-
 def eval_model(x):
- 
 
-	#CONDICOES INICIAIS FROM COVID-19_ALL
+    """
+    Initializes the initial conditions of the model. Solves initial value problem, using variable values at t = 0, 
+    to find its time evolution to t> 0. The odeint function takes care of this directly, s
+    olving PVIs for ODE systems.
+    
+    :return V,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, C = y[:,0], y[:,1], y[:,2], y[:,3], y[:,4], y[:,5], y[:,6], y[:,7], y[:,8], y[:,9], y[:,10], y[:,11], y[:,12], y[:,13], y[:,14]:
+    """
+
+    """
+    Initial conditions from COVID-19_ALL
+
+    :param V0: float
+        initial virus condition
+    :param Ap0: float
+        immature APC's initial condition
+    :param Apm0: float
+        mature APC's initial condition
+    :param Ai0: float
+        Ai 
+    :param C0: float
+        C0 cytokines initial condition
+    :param Thn0: float
+        TDC4 + naive cells initial condition
+    :param The0: float
+        TDC4 + effector cells initial condition
+    :param Tkn0: float
+        TDC8 + naive cells initial condition
+    :param Tke0: float
+        TDC8 + effector cells initial condition
+    :param B0: float
+        memory B cells initial condition
+    :param Ps0: float
+        short-lived plasma cells initial condition
+    :param Pl0: float
+        long-lived plasma cells initial condition
+    :param A0_M : float
+        antibodies IgM initial condition
+    :param A0_G : float
+        antibodies IgG initial condition
+
+    """
     V0 = 2.18808824e+00
     Ap0 = 1.0e6
     Apm0 = 0.0
-    Ai0=0
-    C0=0
+    Ai0= 0.0
+    C0= 0.0
     Thn0 = (1.0e6)
     The0 = 0.0  
     Tkn0 = (1.0e3)*500.0
@@ -89,27 +120,29 @@ def eval_model(x):
     A0_M = 0.0  
     A0_G = 0.0
 
-    #vetor que salva todas as condicoes iniciais
+    #Vector that saves all initial conditions
     P0 = [V0,Ap0,Apm0,Thn0,The0,Tkn0,Tke0,B0,Ps0,Pl0,Bm0,A0_M,A0_G,Ai0,C0]
 
 
-	######################PARAMETROS DO MODELO######################################
-    #os que estao com fit sao os parametros avaliados na UQ
-    #z eh o vetor que armaneza os non-survivors
-    #x eh os survivors
-    
+	###################### MODEL PARAMETERS ######################################
+    """
+    Those with 'fit' are the parameters evaluated in the UQ.
+    z is the vector that stores non-survivors
+    x is the vector that stores survivors
+
+    """    
     pi_v = x[0] #fit
     c_v1 = 2.63
     c_v2 = 0.60
     k_v1 = 3.5e-3
     k_v2 = 9.5e-5
-    alpha_Ap = 1.87E-06*0.4 #remover
+    alpha_Ap = 1.87E-06*0.4 #remove
     beta_Ap = x[1] #fit
     c_ap1 = x[2] #fit
     c_ap2 = x[3] #fit
 
     delta_Apm = x[4] #fit
-    alpha_Tn = 2.17E-04 #=>remover
+    alpha_Tn = 2.17E-04 #=>remove
     beta_tk = x[5] #fit
     pi_tk = 1.0E-08
     delta_tk = 0.0003
@@ -148,7 +181,7 @@ def eval_model(x):
     beta_tke = x[17] #fit
     
  
-    #Morto
+    #UQ assessed non-survivors
     '''
     beta_apm = 1.48569967 
     beta_tk = 0.10171796
@@ -159,20 +192,18 @@ def eval_model(x):
     
     '''
 
-    
+    #Vector filled with model parameters
     model_args = (pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap, c_ap1, c_ap2,
     delta_Apm, alpha_Tn, beta_tk, pi_tk, delta_tk, alpha_B, pi_B1, pi_B2, 
     beta_ps, beta_pl, beta_Bm,delta_S, delta_L, gamma_M, k_bm1, k_bm2, pi_AS,
     pi_AL, delta_ag, delta_am, alpha_th, beta_th, pi_th, delta_th, Ap0, Thn0, Tkn0, B0,  
     pi_c_apm, pi_c_i,pi_c_tke,delta_c, beta_apm, k_v3, beta_tke)
-
-	#------------------------------------------------------------------------------------------------------------------#
     
 
-    #resolve o modelo
+    #Solves the model using odeint function
     y,d=integrate.odeint(immune_response_v3, P0, t, args=(model_args), full_output=1, printmessg=True)
 
-    #ordem de retorno 
+    #Return order
     #V,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, C = y[:,0], y[:,1], y[:,2], y[:,3], y[:,4], y[:,5], y[:,6], y[:,7], y[:,8], y[:,9], y[:,10], y[:,11], y[:,12], y[:,13], y[:,14]
     
 
@@ -180,30 +211,24 @@ def eval_model(x):
 
 if __name__ == "__main__":
 
-
-
-    # uso
-    '''if(len(sys.argv) != 6):
-        print("Usage: sirmodel [arquivo_samples] [caso] [opt_forecast] [path_output] [output extension]")
-        sys.exit(0)'''
-        
+    #Output Settings
     output_path = './output_monte_carlo/'
     ext = '.png'
     itvl = 6
     caso = 'caso.'
 
-    #arqpar = "./cluster/execution_de_non_survivor.txt"
-    #para executar os vivos
+    
+    #To execute the survivors
     arqpar = "./cluster/execution_de_survivor.txt"
-    #para os parametros dos mortos
+
+    #To execute the non-survivors
     #arqpar2 = "./cluster/execution_de_non_survivor.txt"
     
-    print('Arquivo de Samples sobreviventes: ', arqpar)
-    #print('Arquivo de Samples obitos: ', arqpar2)
-    print('Nome do output: ', output_path)
-    print('Extensao do output: ', ext)
+    print('Surviving Samples file: ', arqpar)
+    print('Output name:', output_path)
+    print('Output extension:', ext)
 
-    # ajeita os dados para o caso
+    #Fixes the data for the case
     data = None
 
     
@@ -213,20 +238,32 @@ if __name__ == "__main__":
         "beta_ps", "beta_pl", "beta_Bm","delta_S", "delta_L", "gamma_M", "k_bm1", "k_bm2", "pi_AS",
         "pi_AL", "delta_ag", "delta_am", "alpha_th", "beta_th", "pi_th", "delta_th", "Ap0", "Thn0", "Tkn0", "B0",  
         "pi_c_apm", "pi_c_i","pi_c_tke","delta_c", "beta_apm", "k_v3", "beta_tke")
-    
-    
-    #--------------------MATRIZ COVARIANCIA, DISTRIBUICAO---------------------#
 
 
     label_covid = ['pi_v', 'beta_Ap', 'c_ap1', 'c_ap2', 'delta_Apm', 'beta_tk', 'beta_ps', 'beta_pl', 'delta_S',
     'delta_L', 'pi_AS', 'pi_AL', 'alpha_th', 'beta_th', 'pi_c_tke', 'delta_c', 'beta_apm', 'beta_tke']
 
 
-     #--------------------Para vivos---------------------#
+    #--------------------For survivors---------------------#
     m = np.loadtxt(arqpar, comments='#')
     M= m[:,:-1]
-
+    
+    #--------------------For non-survivors---------------------#
+    #m2 = np.loadtxt(arqpar2, comments='#')
+    #M2= m2[:,:-1]
+    #Cov_matrix_2 = np.cov(M2.T)
+    #mean_vector_2 = np.mean(M2, axis=0)
+    #std_vector_2 = np.std(M2, axis=0)
+    #print("mean = ", mean_vector)
+    #print("std = ", std_vector)
+    #dist2 = cp.MvNormal(mean_vector_2, Cov_matrix_2)
+    
     '''
+    It sets up a covariancy matrix, then extracts the mean and standard deviation.
+    '''
+
+    #-------------------only 1 distribution---------------------#
+
     Cov_matrix = np.cov(M.T)
     mean_vector = np.mean(M, axis=0)
     std_vector = np.std(M, axis=0)
@@ -235,57 +272,34 @@ if __name__ == "__main__":
 
     dist = cp.MvNormal(mean_vector, Cov_matrix)
     
-    '''
-    '''
-    #--------------------Para mortos---------------------#
-    m2 = np.loadtxt(arqpar2, comments='#')
-    M2= m2[:,:-1]
-
-    
-    Cov_matrix_2 = np.cov(M2.T)
-    mean_vector_2 = np.mean(M2, axis=0)
-    std_vector_2 = np.std(M2, axis=0)
- 
-    print("mean = ", mean_vector)
-    print("std = ", std_vector)
-
-    dist2 = cp.MvNormal(mean_vector_2, Cov_matrix_2)
-    
-    '''
-    
-    #-------------------APENAS1DIST----------------------#
-    #C = np.concatenate ((M,M2))
-    #print("Concatenacao: ")
-    #print(C)
-    
-    Cov_matrix = np.cov(M.T)
-    mean_vector = np.mean(M, axis=0)
-    std_vector = np.std(M, axis=0)
-    print("mean = ", mean_vector)
-    print("std = ", std_vector)
-
-    dist = cp.MvNormal(mean_vector, Cov_matrix)
-    
-    #-------------------APENAS1DIST----------------------#
+    #-------------------only 1 distribution---------------#
     #-------------------***********----------------------#
    
-    #numero de parametros
+    
+    '''
+    And then, the degree of polynomial approximation and the number of samples
+    '''
+    
+    #Number of parameters
     npar = len(dist)
-    #npar2 = len(dist2)
-
-    #grau da aproximacao polinomial
+   
+    #Degree of polynomial approximation
     degpc = 2
     ns = 10000#3*P(degpc,npar)
     print("number of input parameters two txts  %d" % npar)
-    #print("number of input parameters txt 2 %d" % npar2)
+   
     print("polynomial degree %d" % degpc)
     print("min number of samples %d" % ns)
 
-    # create samples and evaluate them
+    #Create samples and evaluate them
     #samples = distribution.sample(ns,"L")
     #-----------------------------------------------------------------------------------------------------------------------#
 
     #----------------------------------------------------EVALS--------------------------------------------------------------#
+    '''
+    Creation of arrays that store the evals of each population
+    '''
+    
     evals_virus = []
     evals_Ap = []
     evals_Apm = []
@@ -303,19 +317,22 @@ if __name__ == "__main__":
     evals_C = []
     
     samples = dist.sample(ns,"L")
-    #samples2 = dist2.sample(ns,"L")
+    
     k = 0
     lpts = range(ns)
     samp = samples.T
-    #samp2 = samples2.T
+    
     
     print("evaluating samples: ")
+
+    '''
+    The samples are evaluated within the loop and added to their respective arrays:
+    '''
+
     for i in tqdm(lpts,bar_format='{l_bar}{bar:20}{r_bar}{bar:-20b}'):
-    #for s in samples.T:
         s = samp[k]
-        #s2 = samp2[k]
         k = k+1
-        #s = np.concatenate ((s,s2))
+        
         virus,Ap,Apm,Thn,The,Tkn,Tke,B,Ps,Pl,Bm,A_M, A_G, I ,C = eval_model(s)
         evals_virus.append(virus)
         evals_Ap.append(Ap) 
@@ -351,16 +368,14 @@ if __name__ == "__main__":
     evals_C =  np.array(evals_C)
         
     #-----------------------------------------------------------------------------------------------------------------------# 
-    #
-    # Plot data
-    #
+    #Plot data
     plt.style.use('estilo/PlotStyle.mplstyle')
     plt.close('all')
 
 
         
-    #saving the evals
-   # if opt_save_evals:
+    #Saving the evals
+    #if opt_save_evals:
         #np.savetxt(out_path+caso+'_evals_virus.txt',evals_virus)
         #np.savetxt(out_path+caso+'_evals_Ap.txt',evals_Ap)
         #np.savetxt(out_path+caso+'_evals_Apm.txt',evals_Apm)
@@ -379,7 +394,7 @@ if __name__ == "__main__":
 
 
     #--------------------------------------MEANS-------------------------------------------------------------------#
-    #para copiar e colar caso necessario
+    #To copy if necessary
     '''
     mean_virus = plot_confidence_interval(ax, t, evals_virus, 'red', 'Modelo: Virus')
     mean_Ap = plot_confidence_interval(ax, t, evals_Ap, 'green', 'Modelo: Ap')
@@ -397,41 +412,16 @@ if __name__ == "__main__":
     mean_I = plot_confidence_interval(ax, t, evals_I, 'green', 'Modelo: I')
     mean_C = plot_confidence_interval(ax, t, evals_C, 'blue', 'Modelo: C')
     '''
-    #---------------------------------------------------------------------------------------------------------------#
-    #usuais de plot
-    '''
-    ax.set_xlabel('dia')
-    ax.set_ylabel('população')
-    ax.legend(loc='upper left', prop={'size':13})
-    plt.title("Solution -")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(out_path+caso+'_output_R'+ext)
-    plt.show()  
-    '''  
-
-    #---------------------------------------------------------------------------------------------------------------#
-    #example
-    '''
-       mean_IgM = plot_confidence_interval(plt, t, evals_IgM, 'r', 'Modelo: testando IgM')
-       plt.grid(True)
-       plt.xticks(rotation=45)
-       plt.title("Solution IgM")
-       plt.legend(loc='best')
-       plt.tight_layout()
-       plt.savefig(out_path+'_output_IgM'+ext)
-       plt.show()'''
     
     
     #-------------------------VIRUS--------------------------------------
     
   
     plt.figure('Viremia')
-    #dadosViremiaLog10.plot.scatter(x='Day',y='Viral_load',color='m',label='Dados experimentais')
     plt.plot(t, dadosViremiaLog10['Viral_load'], 'o', label='data', linewidth=4)
     plt.xlim(0.0,dias_de_simulação)
     #plt.ylim(0.0,8.0)
-    plt.xlabel('Tempo pós-vacinação (dias)')
+    plt.xlabel('Post-vaccination time (days)')
     plt.ylabel('Virus')
     plt.legend(loc='upper left', prop={'size':13})
     plt.grid(True)
@@ -444,32 +434,28 @@ if __name__ == "__main__":
     #plt.show()
     
 
-    #-------------------------ANTICORPOS--------------------------------------
+    #-------------------------ANTIBODIES--------------------------------------
     
-    plt.figure('Anticorpos')
+    plt.figure('Antibodies')
     plt.xlim(0.0,dias_de_simulação)
     plt.legend(loc='upper left', prop={'size':13})
     plt.grid(True)
-    plt.title("Solution Anticorpos")
+    plt.title("Solution Antibodies.")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    #plt.ylim(0.0,8.0)
-    #plt.plot(t, antibody_m, 'o', label='IgM data', linewidth=4)
     plt.plot(t, np.log2(antibody_m+1), 'o', label='IgM data', linewidth=4)
-    #plt.plot(t, antibody_g, 'o', label='IgG data', linewidth=4)
     plt.plot(t, np.log2(antibody_g+1), 'o', label='IgG data', linewidth=4)
-    plt.xlabel('Tempo pós-infecção (dias)')
-    plt.ylabel('Anticorpos - log 2 S/CO')
-    mean_AM = plot_confidence_interval_log(plt, t, evals_AM, 'orange', 'Modelo: A_M')
-    mean_AG = plot_confidence_interval_log(plt, t, evals_AG, 'red', 'Modelo: A_G')
-    plt.savefig(output_path+'Anticorpos'+ext,bbox_inches='tight',dpi = 300)
+    plt.xlabel('Post-vaccination time (days)')
+    plt.ylabel('Antibodies - log 2 S/CO')
+    mean_AM = plot_confidence_interval_log(plt, t, evals_AM, 'orange', 'Model: A_M')
+    mean_AG = plot_confidence_interval_log(plt, t, evals_AG, 'red', 'Model: A_G')
+    plt.savefig(output_path+'Antibodies'+ext,bbox_inches='tight',dpi = 300)
     
     
     #-------------------------AP--------------------------------------
     
     plt.figure('Ap')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Apresentadores')
     plt.legend(loc='upper left', prop={'size':13})
@@ -478,13 +464,12 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Ap = plot_confidence_interval(plt, t, evals_Ap, 'green', 'Modelo: Ap')
     plt.savefig(output_path+'Ap'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
+
     
     #-------------------------APM---------------------------------------------
    
     plt.figure('Apm')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Apresentadores Maduras')
     plt.legend(loc='upper left', prop={'size':13})
@@ -493,13 +478,12 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Apm = plot_confidence_interval(plt, t, evals_Apm, 'blue', 'Modelo: Apm')
     plt.savefig(output_path+'Apm'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
+    
     
     #-------------------------Thn---------------------------------------------
     
     plt.figure('Thn')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Th Naive')
     plt.legend(loc='upper left', prop={'size':13})
@@ -508,13 +492,11 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Thn = plot_confidence_interval(plt, t, evals_Thn, 'black', 'Modelo: Thn')
     plt.savefig(output_path+'Thn'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
     
     #-------------------------The---------------------------------------------
     
     plt.figure('The')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Th Efetora')
     plt.legend(loc='upper left', prop={'size':13})
@@ -523,13 +505,12 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_The = plot_confidence_interval(plt, t, evals_The, 'purple', 'Modelo: The')
     plt.savefig(output_path+'The'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
+    
     
     #-------------------------Tkn---------------------------------------------    
     
     plt.figure('Tkn')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Tk Naive')
     plt.legend(loc='upper left', prop={'size':13})
@@ -538,13 +519,12 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Tkn = plot_confidence_interval(plt, t, evals_Tkn, 'orange', 'Modelo: Tkn')
     plt.savefig(output_path+'Tkn'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
+    
     
     #-------------------------Tke---------------------------------------------
    
     plt.figure('Tke')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Tk Efetora')
     plt.legend(loc='upper left', prop={'size':13})
@@ -553,13 +533,11 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Tke = plot_confidence_interval(plt, t, evals_Tke, 'red', 'Modelo: Tke')
     plt.savefig(output_path+'Tke'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
     
     #-------------------------B---------------------------------------------
     
     plt.figure('B')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('B')
     plt.legend(loc='upper left', prop={'size':13})
@@ -568,7 +546,6 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_B = plot_confidence_interval(plt, t, evals_B, 'green', 'Modelo: B')
     plt.savefig(output_path+'B'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
     
     #np.savetxt(output_path+'b.txt',y[:,7])
     
@@ -576,7 +553,6 @@ if __name__ == "__main__":
     
     plt.figure('Ps')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Ps')
     plt.legend(loc='upper left', prop={'size':13})
@@ -585,13 +561,11 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Ps = plot_confidence_interval(plt, t, evals_Ps, 'blue', 'Modelo: Ps')
     plt.savefig(output_path+'Ps'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
     
     #-------------------------Pl---------------------------------------------
     
     plt.figure('Pl')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Pl')
     plt.legend(loc='upper left', prop={'size':13})
@@ -600,13 +574,11 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Pl = plot_confidence_interval(plt, t, evals_Pl, 'black', 'Modelo: Pl')
     plt.savefig(output_path+'Pl'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
     
     #-------------------------Bm---------------------------------------------
     
     plt.figure('Bm')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('Bm')
     plt.legend(loc='upper left', prop={'size':13})
@@ -615,13 +587,11 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_Bm = plot_confidence_interval(plt, t, evals_Bm, 'purple', 'Modelo: Bm')
     plt.savefig(output_path+'Bm'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
     
     #-------------------------AM---------------------------------------------
     
     plt.figure('A_M')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('A_M')
     plt.legend(loc='upper left', prop={'size':13})
@@ -630,13 +600,12 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_AM = plot_confidence_interval(plt, t, evals_AM, 'orange', 'Modelo: A_M')
     plt.savefig(output_path+'A_M'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
+
     
     #-------------------------AG---------------------------------------------
    
     plt.figure('A_G')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('A_G')
     plt.legend(loc='upper left', prop={'size':13})
@@ -645,13 +614,12 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_AG = plot_confidence_interval(plt, t, evals_AG, 'red', 'Modelo: A_G')
     plt.savefig(output_path+'A_G'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
+   
     
     #-------------------------I---------------------------------------------
     
     plt.figure('Ai')
     plt.xlim(0.0,dias_de_simulação)
-    #plt.ylim(0.0,8.0)
     plt.xlabel('Tempo pós-vacinação (dias)')
     plt.ylabel('APC infectada')
     plt.legend(loc='upper left', prop={'size':13})
@@ -660,13 +628,11 @@ if __name__ == "__main__":
     plt.tight_layout()
     mean_I = plot_confidence_interval(plt, t, evals_I, 'green', 'Modelo: I')
     plt.savefig(output_path+'Ai'+ext,bbox_inches='tight',dpi = 300)
-    #plt.show()
     
-    #-------------------------C SOBREVIVENTES---------------------------------------------
+    #-------------------------C SURVIVORS---------------------------------------------
     
     
     plt.figure('C')
-    #dadosCitocinaSobreviventes.plot.scatter(x='Day',y='IL6(pg/mL)',color='g',label='Dados experimentais(Sobreviventes)')
     plt.plot(dadosCitocinaSobreviventes['Day']+5, dadosCitocinaSobreviventes['IL6(pg/mL)'], 'o', label='data', linewidth=4)
     plt.xlim(0.0,dias_de_simulação)
     #plt.ylim(0.0,8.0)
@@ -680,13 +646,9 @@ if __name__ == "__main__":
     plt.savefig(output_path+'C'+ext,bbox_inches='tight',dpi = 300)
     plt.show()
     
-    print("vim ate aqui")
+    print("end code")
     
-    
-    
-    
-    
-    #-------------------------C OBITOS---------------------------------------------
+    #-------------------------C NON-SURVIVORS---------------------------------------------
     
     '''
     plt.figure('C')
@@ -702,6 +664,5 @@ if __name__ == "__main__":
     #plt.show()
     '''
 
-
     
-#Fim
+#End
