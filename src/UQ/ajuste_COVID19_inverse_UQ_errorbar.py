@@ -23,6 +23,34 @@ dadosViremiaLog10 = pd.read_csv(path+'Viral_load_paper.csv',',')
 dadosAnticorposLog2 = pd.read_csv(path+'IgG_IgM.csv',',')
 dadosIL6 = pd.read_csv(path+'IL6_ajuste.csv',',')
 
+
+#Viremia data
+dadosViremia = pd.read_csv(path+'dataset_viremia.csv',',')
+virus_mean=np.log10(dadosViremia['Mean']+1)
+virus_max=np.log10(dadosViremia['Max']+1)-np.log10(dadosViremia['Mean']+1)
+virus_min=np.log10(dadosViremia['Mean']+1)-np.log10(dadosViremia['Min']+1)
+
+#Antibodies Data
+dadosAnticorposLog2_avg = pd.read_csv(path+'IgG_IgM_data.csv',',')
+antibody_g_mean = np.log2(dadosAnticorposLog2_avg['IgG']+1)
+antibody_m_mean = np.log2(dadosAnticorposLog2_avg['IgM']+1)
+
+antibody_g_min=antibody_g_mean-np.log2(dadosAnticorposLog2_avg['IgG_25']+1)
+antibody_g_max=np.log2(dadosAnticorposLog2_avg['IgG_975']+1)-antibody_g_mean
+antibody_m_min=antibody_m_mean-np.log2(dadosAnticorposLog2_avg['IgM_25']+1)
+antibody_m_max=np.log2(dadosAnticorposLog2_avg['IgM_975']+1)-antibody_m_mean
+
+#cytokine data
+dadosCitocina = pd.read_csv(path+'dataset_il6.csv',',')
+cytokineSurvivor = dadosCitocina['Survivor']
+cytokineSurvivor_min = cytokineSurvivor - dadosCitocina['MinSurvivor']
+cytokineSurvivor_max = dadosCitocina['MaxSurvivor'] - cytokineSurvivor
+
+cytokineNonSurvivor = dadosCitocina['NonSurvivor']
+cytokineNonSurvivor_min = cytokineNonSurvivor- dadosCitocina['MinNonSurvivor']
+cytokineNonSurvivor_max = dadosCitocina['MaxNonSurvivor']- cytokineNonSurvivor
+
+
 erro_max = 0.45
 
 first_day = 0
@@ -227,12 +255,14 @@ if __name__ == "__main__":
     #define os bounds para cada um dos parâmetros
 
     opt_de = False
-    opt_storm = False
+    opt_storm = True
+    opt_name = 'survivor'
     
     if opt_storm:
         dadosIL6 = pd.read_csv(path+'IL6_storm_ajuste.csv',',')
         il6_data = dadosIL6['IL6(pg/mL)']
         erro_max = 0.4
+        opt_name = 'nonsurvivor'
         
     if opt_de:
         #Best fit for all parameters survivor
@@ -293,6 +323,8 @@ if __name__ == "__main__":
     print("Erro IgG: ", erro_IgG)
     print("Erro il6: ", erro_il6)
     
+    
+    '''
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
     fig.set_size_inches(12, 25)
    
@@ -332,5 +364,54 @@ if __name__ == "__main__":
     ax4.grid()
 
     plt.savefig('output_fit.pdf')
+    '''
+    #plt.style.use('../estilo/PlotStyle.mplstyle')
+    #plt.close('all')
+        
+    plt.figure();
+    plt.title("Virus")
+    plt.plot(ts, np.log10(V), label='Viremia model', linewidth=1.5)
+    plt.errorbar(dadosViremia['Day']-1, virus_mean, yerr=[virus_min, virus_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)
+    plt.legend(loc="best",prop={'size': 13})
+    plt.grid(True)
+    plt.tight_layout()    
+    plt.savefig('output_'+opt_name+'_virus.pdf',bbox_inches='tight',dpi = 300)
+    
+    plt.figure();
+    plt.title("IgG")
+    plt.plot(ts, np.log2(A_g+1), label='IgG model', linewidth=1.5)
+    plt.errorbar(dadosAnticorposLog2_avg['Day'], antibody_g_mean, yerr=[antibody_g_min, antibody_g_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)    
+    plt.legend(loc="best",prop={'size': 13})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('output_'+opt_name+'_igg.pdf',bbox_inches='tight',dpi = 300)
+    
+    plt.figure();
+    plt.title("IgM")
+    plt.plot(ts, np.log2(A_m+1), label='igM model', linewidth=1.5)
+    plt.errorbar(dadosAnticorposLog2_avg['Day'], antibody_m_mean, yerr=[antibody_m_min, antibody_m_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)
+    plt.legend(loc="best",prop={'size': 13})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('output_'+opt_name+'_igm.pdf',bbox_inches='tight',dpi = 300)
+    
+    if opt_storm:
+        plt.figure();
+        plt.title("Cytokines")
+        plt.plot(ts, il6, label='IL-6 model', linewidth=1.5)
+        plt.errorbar(dadosCitocina['Day'], cytokineNonSurvivor, yerr=[cytokineNonSurvivor_min, cytokineNonSurvivor_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)    
+        plt.legend(loc="best",prop={'size': 13})
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig('output_'+opt_name+'_c.pdf',bbox_inches='tight',dpi = 300)
+    else:
+        plt.figure();
+        plt.title("Cytokines")
+        plt.plot(ts, il6, label='IL-6 model', linewidth=1.5)
+        plt.errorbar(dadosCitocina['Day'], cytokineSurvivor, yerr=[cytokineSurvivor_min, cytokineSurvivor_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)    
+        plt.legend(loc="best",prop={'size': 13})
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig('output_'+opt_name+'_c.pdf',bbox_inches='tight',dpi = 300)
     #plt.show()
 

@@ -23,20 +23,43 @@ dadosViremiaLog10 = pd.read_csv(path+'Viral_load_paper.csv',',')
 dadosAnticorposLog2 = pd.read_csv(path+'IgG_IgM.csv',',')
 dadosIL6 = pd.read_csv(path+'IL6_ajuste.csv',',')
 
+
+#Viremia data
+dadosViremia = pd.read_csv(path+'dataset_viremia.csv',',')
+virus_mean=np.log10(dadosViremia['Mean']+1)
+virus_max=np.log10(dadosViremia['Max']+1)-np.log10(dadosViremia['Mean']+1)
+virus_min=np.log10(dadosViremia['Mean']+1)-np.log10(dadosViremia['Min']+1)
+
+#Antibodies Data
+dadosAnticorposLog2_avg = pd.read_csv(path+'IgG_IgM_data.csv',',')
+antibody_g_mean = np.log2(dadosAnticorposLog2_avg['IgG']+1)
+antibody_m_mean = np.log2(dadosAnticorposLog2_avg['IgM']+1)
+
+antibody_g_min=antibody_g_mean-np.log2(dadosAnticorposLog2_avg['IgG_25']+1)
+antibody_g_max=np.log2(dadosAnticorposLog2_avg['IgG_975']+1)-antibody_g_mean
+antibody_m_min=antibody_m_mean-np.log2(dadosAnticorposLog2_avg['IgM_25']+1)
+antibody_m_max=np.log2(dadosAnticorposLog2_avg['IgM_975']+1)-antibody_m_mean
+
+#cytokine data
+dadosCitocina = pd.read_csv(path+'dataset_il6.csv',',')
+cytokineSurvivor = dadosCitocina['Survivor']
+cytokineSurvivor_min = cytokineSurvivor - dadosCitocina['MinSurvivor']
+cytokineSurvivor_max = dadosCitocina['MaxSurvivor'] - cytokineSurvivor
+
+cytokineNonSurvivor = dadosCitocina['NonSurvivor']
+cytokineNonSurvivor_min = cytokineNonSurvivor- dadosCitocina['MinNonSurvivor']
+cytokineNonSurvivor_max = dadosCitocina['MaxNonSurvivor']- cytokineNonSurvivor
+
+
 erro_max = 0.45
 
 first_day = 0
-'''
-virus = np.power(10,dadosViremiaLog10['Viral_load'])
-antibody_g = np.power(2,dadosAnticorposLog2['IgG'])-1
-antibody_m = np.power(2,dadosAnticorposLog2['IgM'])-1
-
-'''
 
 virus = np.power(10, dadosViremiaLog10['Viral_load'])
 virus_plot = np.power(10, dadosViremiaLog10['Plot'])
 antibody_g = dadosAnticorposLog2['IgG']
 antibody_m = dadosAnticorposLog2['IgM']
+#il6_data = cytokineSurvivor
 il6_data = dadosIL6['IL6(pg/mL)']
 
 execution_de = []
@@ -166,7 +189,6 @@ def model(x):
         #Viremia error 
         #virus represents experimental data, V the numerical one 
         
-        #virus_aux = np.multiply(virus, mask_virus)
         V_aux = np.multiply(np.log10(V[first_day:]), mask_virus[first_day:])
         erro_V = np.linalg.norm(np.log10(virus[first_day:])-V_aux, vnorm)/np.linalg.norm(np.log10(virus[first_day:]), vnorm)
         #print(np.linalg.norm(V_aux,vnorm))
@@ -175,40 +197,46 @@ def model(x):
             erro_V = 1e12
         
         #antibody G
-        #print(len(antibody_g), len(mask_antibodies))
-        #print(antibody_g)
         
         antibody_g_aux = np.multiply(antibody_g[first_day:], mask_antibodies[first_day:])
         IgG_aux = np.multiply(A_g[first_day:], mask_antibodies[first_day:])
+        
         erro_IgG = np.linalg.norm(antibody_g_aux-IgG_aux, vnorm)/np.linalg.norm(antibody_g_aux, vnorm)
-        #print(np.linalg.norm(antibody_g_aux[first_day:]-IgG_aux, vnorm))
+        
         if (math.isnan(erro_IgG) or math.isinf(erro_IgG)):
             erro_IgG = 1e12
         
         #antibody M
         antibody_m_aux = np.multiply(antibody_m[first_day:], mask_antibodies[first_day:])
         IgM_aux = np.multiply(A_m[first_day:], mask_antibodies[first_day:])
+        
         erro_IgM = np.linalg.norm(antibody_m_aux-IgM_aux, vnorm)/np.linalg.norm(antibody_m_aux, vnorm)
-        #print(antibody_m_aux[first_day:]-IgM_aux)
+        
         if (math.isnan(erro_IgM) or math.isinf(erro_IgM)):
             erro_IgM = 1e12
 
         #cytokine il-6
         il6data_aux = np.multiply(il6_data[first_day:], mask_cytokine[first_day:])
         il6_aux = np.multiply(il6[first_day:], mask_cytokine[first_day:])
-        #print(il6_aux)
+        
         erro_il6 = np.linalg.norm(il6data_aux-il6_aux, vnorm)/np.linalg.norm(il6data_aux, vnorm)
-        #print(antibody_m_aux[first_day:]-IgM_aux)
+        
         if (math.isnan(erro_il6) or math.isinf(erro_il6)):
             erro_il6 = 1e12    
         
         
-        weight = 0.1
+        weight = 1.0
         erro = weight*erro_IgG + weight*erro_IgM + erro_V + erro_il6
         erro_inf = max(erro_V, erro_il6, erro_IgM, erro_IgG)
+    
+    igg_ok = min(dadosAnticorposLog2_avg['IgG_975']>=IgG_aux[IgG_aux>0]) and min(dadosAnticorposLog2_avg['IgG_25']<=IgG_aux[IgG_aux>0])
+    igm_ok = min(dadosAnticorposLog2_avg['IgM_975']>=IgM_aux[IgM_aux>0]) and min(dadosAnticorposLog2_avg['IgM_25']<=IgG_aux[IgM_aux>0])
+    il6_ok = min(il6_max+il6_mean>=il6_aux[il6_aux>0]) and min(il6_mean-il6_min<=il6_aux[il6_aux>0])
+    virus_ok = virus_max+virus_mean #>= V_aux[V_aux>0]
+    print(virus_ok)
+
 
     if (erro_inf <= erro_max):        
-        #print(x)
         ind = []
         ind.append(erro)
         for v in x:
@@ -227,12 +255,20 @@ if __name__ == "__main__":
     #define os bounds para cada um dos parâmetros
 
     opt_de = False
-    opt_storm = False
-    
+    opt_storm = True
+    opt_name = 'survivor'
+    il6_mean = cytokineSurvivor
+    il6_min = cytokineSurvivor_min
+    il6_max = cytokineSurvivor_max
     if opt_storm:
         dadosIL6 = pd.read_csv(path+'IL6_storm_ajuste.csv',',')
         il6_data = dadosIL6['IL6(pg/mL)']
+        il6_mean = cytokineNonSurvivor
+        il6_min = cytokineNonSurvivor_min
+        il6_max = cytokineNonSurvivor_max
+        
         erro_max = 0.4
+        opt_name = 'nonsurvivor'
         
     if opt_de:
         #Best fit for all parameters survivor
@@ -293,6 +329,8 @@ if __name__ == "__main__":
     print("Erro IgG: ", erro_IgG)
     print("Erro il6: ", erro_il6)
     
+    
+    '''
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
     fig.set_size_inches(12, 25)
    
@@ -332,5 +370,46 @@ if __name__ == "__main__":
     ax4.grid()
 
     plt.savefig('output_fit.pdf')
+    '''
+    #plt.style.use('../estilo/PlotStyle.mplstyle')
+    #plt.close('all')
+        
+    plt.figure();
+    plt.title("Virus")
+    plt.plot(ts, np.log10(V), label='Viremia model', linewidth=1.5)
+    plt.errorbar(dadosViremia['Day'], virus_mean, yerr=[virus_min, virus_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)
+    plt.legend(loc="best",prop={'size': 13})
+    plt.grid(True)
+    plt.tight_layout()    
+    plt.savefig('output_'+opt_name+'_virus.pdf',bbox_inches='tight',dpi = 300)
+    
+    plt.figure();
+    plt.title("IgG")
+    plt.plot(ts, np.log2(A_g+1), label='IgG model', linewidth=1.5)
+    plt.errorbar(dadosAnticorposLog2_avg['Day'], antibody_g_mean, yerr=[antibody_g_min, antibody_g_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)    
+    plt.legend(loc="best",prop={'size': 13})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('output_'+opt_name+'_igg.pdf',bbox_inches='tight',dpi = 300)
+    
+    plt.figure();
+    plt.title("IgM")
+    plt.plot(ts, np.log2(A_m+1), label='igM model', linewidth=1.5)
+    plt.errorbar(dadosAnticorposLog2_avg['Day'], antibody_m_mean, yerr=[antibody_m_min, antibody_m_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)
+    plt.legend(loc="best",prop={'size': 13})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('output_'+opt_name+'_igm.pdf',bbox_inches='tight',dpi = 300)
+    
+
+    plt.figure();
+    plt.title("Cytokines")
+    plt.plot(ts, il6, label='IL-6 model', linewidth=1.5)
+    plt.errorbar(dadosCitocina['Day'], il6_mean, yerr=[il6_min, il6_max],linestyle='None', label='Data', fmt='o', color='red', capsize=4, elinewidth=2)    
+    plt.legend(loc="best",prop={'size': 13})
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('output_'+opt_name+'_c.pdf',bbox_inches='tight',dpi = 300)
+
     #plt.show()
 
