@@ -222,7 +222,7 @@ if __name__ == "__main__":
         	
     #define os bounds para cada um dos parâmetros
 
-    opt_de = True
+    opt_de = False
     opt_storm = True
     
     if opt_storm:

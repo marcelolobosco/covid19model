@@ -96,7 +96,7 @@ def immune_response_v3_2 (t, P, pi_v, c_v1, c_v2, k_v1, k_v2, alpha_Ap, beta_Ap,
     dI_dt = beta_apm * Apm * V + beta_tke * Tke * V - delta_Apm*I
     dThn_dt = alpha_th*(Thn0 - Thn) - beta_th*Apm*Thn 
     dThe_dt = beta_th*Apm*Thn + pi_th*Apm*The - delta_th*The
-    dTkn_dt = alpha_Tn*(1+C)*(Tkn0 - Tkn) - beta_tk*(C+1)*Apm*Tkn #alpha_Tn*(C)*(Tkn0 - Tkn) - beta_tk*Apm*Tkn
+    dTkn_dt = alpha_Tn*(C+1)*(Tkn0 - Tkn) - beta_tk*(C+1)*Apm*Tkn #alpha_Tn*(C)*(Tkn0 - Tkn) - beta_tk*Apm*Tkn
     dTke_dt = beta_tk*(C+1)*Apm*Tkn + pi_tk*Apm*Tke - beta_tke * Tke * V - delta_tk*Tke
     dB_dt = alpha_B*(B0 - B) + pi_B1*V*B + pi_B2*The*B - beta_ps*Apm*B - beta_pl*The*B - beta_Bm*The*B
     dPs_dt = beta_ps*Apm*B - delta_S*Ps

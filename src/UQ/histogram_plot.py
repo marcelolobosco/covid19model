@@ -54,6 +54,7 @@ if __name__ == "__main__":
 					ax[i][j].set_ylabel(labels[j])
 				elif(i==j): 			
 					ax[i][j].hist(m[:,i], bins=20, density=True, color='gray')
+					ax[i][j].set_xlabel(labels[i])
 					print(labels[i]+"\t{:.1e}".format(m[:,i].mean())+"\t{:.1e}".format(np.std(m[:,i])))
 				else:    
 					ax[i][j].set_visible(False)                

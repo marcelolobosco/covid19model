@@ -200,8 +200,8 @@ if __name__ == "__main__":
     ext = '.pdf'
     itvl = 6
     caso = 'caso.'
-    opt_storm = True
-    ns = 10000
+    opt_storm = False
+    ns = 1000
 
     #arqpar = "./cluster/execution_de_non_survivor.txt"
     #para executar os vivos
