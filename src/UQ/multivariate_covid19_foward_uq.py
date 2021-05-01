@@ -209,7 +209,7 @@ if __name__ == "__main__":
         arqpar = "./execution_de_non_survivor.txt"
         output_path = './output_monte_carlo/nonsurvivors/'
     else:
-        arqpar = "./execution_de_survivor.txt"
+        arqpar = "./execution_de_survivor_lobosco.txt"
         output_path = './output_monte_carlo/survivors/'
     
     print('Arquivo de Samples: ', arqpar)

@@ -26,10 +26,12 @@ dadosIL6 = pd.read_csv(path+'IL6_ajuste.csv',',')
 
 #Viremia data
 dadosViremia = pd.read_csv(path+'dataset_viremia.csv',',')
+dadosViremia = dadosViremia[dadosViremia['Num_Samples'] > 5]
 virus_mean=np.log10(dadosViremia['Mean']+1)
 virus_max=np.log10(dadosViremia['Max']+1)-np.log10(dadosViremia['Mean']+1)
 virus_min=np.log10(dadosViremia['Mean']+1)-np.log10(dadosViremia['Min']+1)
 virus_std = dadosViremia['Log10_STD']
+virus_num = dadosViremia['Num_Samples']
 
 #Antibodies Data
 dadosAnticorposLog2_avg = pd.read_csv(path+'IgG_IgM_data.csv',',')
@@ -72,12 +74,21 @@ execution_de = []
 mask_virus     =[0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 mask_virus2     =[0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0]
 
+for i in range(len(mask_virus2)):
+    if i not in dadosViremia['Day']:
+        mask_virus2[i] = 0
+    else:
+        mask_virus2[i] = 1
+        
 mask_antibodies=[0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0]
 mask_cytokine  =[0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0]
 
 
 def model(x):
-    ts=range(len(virus))  
+    ts=range(len(virus)) 
+    size_virus = sum(mask_virus2)
+    
+    
     
     #Initial Condition
     V0 = x[0] 
@@ -198,7 +209,8 @@ def model(x):
         #V_aux = np.multiply(np.log10(V[first_day:]), mask_virus[first_day:])
         #erro_V = np.linalg.norm(virus_mean[2:-5]-V_aux[V_aux!=0], vnorm)/np.linalg.norm(virus_std[2:-5]**2, vnorm)
         V_aux = np.multiply(np.log10(V[first_day:]+1), mask_virus2[first_day:])
-        erro_V = 1e12 if len(V_aux[V_aux!=0]) != 21 else np.linalg.norm(virus_mean[2:-5]-V_aux[V_aux!=0], vnorm)/np.linalg.norm(virus_std[2:-5]**2, vnorm)
+        #erro_V = 1e12 if len(V_aux[V_aux!=0]) != size_virus else np.linalg.norm(virus_mean[2:-5]-V_aux[V_aux!=0], vnorm)/np.linalg.norm(virus_std[2:-5]**2, vnorm)
+        erro_V = 1e12 if len(V_aux[V_aux!=0]) != size_virus else np.linalg.norm(virus_mean-V_aux[V_aux!=0], vnorm)/np.linalg.norm(virus_std**2, vnorm)
         #print(np.linalg.norm(V_aux,vnorm))
         if (math.isnan(erro_V) or math.isinf(erro_V)):
             #print("Com NaN ou Inf", x)
@@ -246,15 +258,18 @@ def model(x):
         virus_topo = virus_mean+virus_std
         virus_base = virus_mean-virus_std
         
-        virus_ok =  False if len(V_aux[V_aux!=0]) != 21 else min(virus_topo[2:-5]>= V_aux[V_aux!=0]) and min(virus_base[2:-5]<= V_aux[V_aux!=0])
+        #virus_ok =  False if len(V_aux[V_aux!=0]) != size_virus else min(virus_topo[2:-5]>= V_aux[V_aux!=0]) and min(virus_base[2:-5]<= V_aux[V_aux!=0])
+        virus_ok =  False if len(V_aux[V_aux!=0]) != size_virus else min(virus_topo>= V_aux[V_aux!=0]) and min(virus_base<= V_aux[V_aux!=0])
         
         
-        #print(virus_ok)
-        #print(virus_base[2:-5])
-        #print(V_aux[V_aux!=0])
+        #print(il6_ok)
+        #print(il6_max)
+        #print(il6_min)
+        #print(il6_aux[il6_aux>0])
 
         #if (erro_inf <= erro_max):  
-        if (igg_ok and igm_ok and il6_ok and virus_ok):   
+        if (igg_ok and igm_ok and il6_ok and virus_ok): 
+            #print("salvou!\n");  
             ind = []
             ind.append(erro)
             for v in x:
@@ -277,7 +292,7 @@ if __name__ == "__main__":
     il6_mean = cytokineSurvivor
     il6_min = cytokineSurvivor_min
     il6_max = cytokineSurvivor_max
-    il6_std = cytokineSurvivor_max
+    il6_std = cytokineSurvivor_std
     if opt_storm:
         dadosIL6 = pd.read_csv(path+'IL6_storm_ajuste.csv',',')
         il6_data = dadosIL6['IL6(pg/mL)']
@@ -323,8 +338,8 @@ if __name__ == "__main__":
 
 
         #chama a evolução diferencial que o result contém o melhor individuo
-        #result = differential_evolution(model_adj, vbounds, strategy='best1bin', maxiter=50, popsize=500, disp=True)
-        result = differential_evolution(model_adj, vbounds, strategy='rand2bin', recombination = 0.7, mutation = 1.9, init = 'latinhypercube', maxiter=50, popsize=100, disp=True)
+        result = differential_evolution(model_adj, vbounds, strategy='best1bin', maxiter=10, popsize=100, disp=True)
+        #result = differential_evolution(model_adj, vbounds, strategy='rand2bin', recombination = 0.7, mutation = 1.0, init = 'latinhypercube', maxiter=30, popsize=50, disp=True)
         print('Params order: ')
         print ('...')
         print(result.x)
@@ -336,7 +351,7 @@ if __name__ == "__main__":
         if (opt_storm):
             np.savetxt('execution_de_non_survivor.txt',execution_de)
         else:    
-            np.savetxt('execution_de_survivor.txt',execution_de)
+            np.savetxt('execution_de_survivor_lobosco.txt',execution_de)
     else:
         best = np.loadtxt('params_best_sample.txt')
     
